@@ -22,8 +22,8 @@ view : Model -> Html Msg
 view model =
     svg
         [ id "rect"
-        , height "400px"
-        , width "400px"
+        , height "500px"
+        , width "600px"
         , viewBox "0 0 30 20"
         ]
         [ rect [ x "0", y "0", width "30", height "20", fill "#fafafa" ] []
@@ -160,10 +160,10 @@ mult svgMatrix dragStartPos dragCurrentPos =
             Tuple.second dragCurrentPos - Tuple.second dragStartPos
 
         dxSvg =
-            svgMatrix.a * dxClient + svgMatrix.c * dyClient + svgMatrix.e
+            svgMatrix.a * dxClient + svgMatrix.c * dyClient
 
         dySvg =
-            svgMatrix.b * dxClient + svgMatrix.d * dyClient + svgMatrix.f
+            svgMatrix.b * dxClient + svgMatrix.d * dyClient
     in
     ( dxSvg, dySvg )
 

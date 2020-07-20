@@ -15,8 +15,16 @@
       //var point = svg.createSVGPoint();
       var CTM = svg.getScreenCTM();
       var inverse = CTM.inverse();
+      console.log(CTM);
       console.log(inverse);
+      console.log("--------")
       app.ports.svgMatrixSubscription.send(inverse);
     });
+    // svg.addEventListener("mousemove", function moveHandler(e){
+    //   //var point = svg.createSVGPoint();
+    //   console.log(svg.getScreenCTM().inverse());
+    // });
+
+
   </script>
 </html>
