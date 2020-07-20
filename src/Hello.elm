@@ -1,7 +1,7 @@
 port module Hello exposing (main, requestSvgMatrix, svgMatrixSubscription)
 
 import Browser
-import Html exposing (Html)
+import Html exposing (Html, div)
 import Html.Attributes exposing (id, style)
 import Html.Events.Extra.Mouse as Mouse
 import Svg exposing (rect, svg)
@@ -21,58 +21,48 @@ main =
 
 view : Model -> Html Msg
 view model =
-    svgOuterView model.svgOuter model.drag
-
-
-svgOuterView : SvgOuter -> DragState -> Html Msg
-svgOuterView svgOuter drag =
     let
         defaultAttributes =
-            [ id "svg-outer"
-            , height (String.fromFloat svgOuter.height)
-            , width (String.fromFloat svgOuter.width)
-            , viewBox (viewBoxString svgOuter.viewBox)
-            , style "border-style" "solid"
-            ]
-    in
-    case drag of
-        UnDragged ->
-            svg defaultAttributes
-                (List.map
-                    svgRectView
-                    svgOuter.children
-                )
+            [ style "width" "100%", style "height" "100%" ]
 
-        Dragged _ ->
-            svg
-                (Mouse.onLeave (\_ -> UnDrag) :: defaultAttributes)
-                (List.map
-                    svgRectView
-                    svgOuter.children
-                )
+        attributes =
+            case model.drag of
+                Dragged _ ->
+                    Mouse.onMove (.clientPos >> KeepDragging) :: defaultAttributes
+
+                UnDragged ->
+                    defaultAttributes
+    in
+    div attributes [ svgOuterView model.svgOuter ]
+
+
+svgOuterView : SvgOuter -> Html Msg
+svgOuterView svgOuter =
+    svg
+        [ id "svg-outer"
+        , height (String.fromFloat svgOuter.height)
+        , width (String.fromFloat svgOuter.width)
+        , viewBox (viewBoxString svgOuter.viewBox)
+        , style "border-style" "solid"
+        ]
+        (List.map
+            svgRectView
+            svgOuter.children
+        )
 
 
 svgRectView : SvgRectangle -> Html Msg
 svgRectView svgRect =
-    let
-        defaultAttributes =
-            [ id svgRect.id
-            , width (String.fromFloat svgRect.width)
-            , height (String.fromFloat svgRect.height)
-            , transform (transformString svgRect.transform)
-            , fill svgRect.fillColor
-            , Mouse.onDown (\event -> StartDrag svgRect.id event.clientPos)
-            , Mouse.onUp (\_ -> UnDrag)
-            ]
-
-        attributes =
-            if svgRect.dragged then
-                Mouse.onMove (.clientPos >> KeepDragging) :: defaultAttributes
-
-            else
-                defaultAttributes
-    in
-    rect attributes []
+    rect
+        [ id svgRect.id
+        , width (String.fromFloat svgRect.width)
+        , height (String.fromFloat svgRect.height)
+        , transform (transformString svgRect.transform)
+        , fill svgRect.fillColor
+        , Mouse.onDown (\event -> StartDrag svgRect.id event.clientPos)
+        , Mouse.onUp (\_ -> UnDrag)
+        ]
+        []
 
 
 {-| Msg
