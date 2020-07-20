@@ -21,44 +21,65 @@ main =
 
 view : Model -> Html Msg
 view model =
-    svgOuterView model.svgOuter
+    svgOuterView model.svgOuter model.drag
 
 
-svgOuterView : SvgOuter -> Html Msg
-svgOuterView svgOuter =
-    svg
-        [ id "svg-outer"
-        , height (String.fromFloat svgOuter.height)
-        , width (String.fromFloat svgOuter.width)
-        , viewBox (viewBoxString svgOuter.viewBox)
-        , style "border-style" "solid"
-        ]
-        (List.map
-            svgRectView
-            svgOuter.children
-        )
+svgOuterView : SvgOuter -> DragState -> Html Msg
+svgOuterView svgOuter drag =
+    let
+        defaultAttributes =
+            [ id "svg-outer"
+            , height (String.fromFloat svgOuter.height)
+            , width (String.fromFloat svgOuter.width)
+            , viewBox (viewBoxString svgOuter.viewBox)
+            , style "border-style" "solid"
+            ]
+    in
+    case drag of
+        UnDragged ->
+            svg defaultAttributes
+                (List.map
+                    svgRectView
+                    svgOuter.children
+                )
+
+        Dragged _ ->
+            svg
+                (Mouse.onLeave (\_ -> UnDrag) :: defaultAttributes)
+                (List.map
+                    svgRectView
+                    svgOuter.children
+                )
 
 
 svgRectView : SvgRectangle -> Html Msg
 svgRectView svgRect =
-    rect
-        [ id svgRect.id
-        , width (String.fromFloat svgRect.width)
-        , height (String.fromFloat svgRect.height)
-        , transform (transformString svgRect.transform)
-        , fill svgRect.fillColor
-        , Mouse.onDown (\event -> StartDrag svgRect.id event.clientPos)
-        , Mouse.onMove (.clientPos >> KeepDragging)
-        , Mouse.onUp (\_ -> UnDrag svgRect.id)
-        ]
-        []
+    let
+        defaultAttributes =
+            [ id svgRect.id
+            , width (String.fromFloat svgRect.width)
+            , height (String.fromFloat svgRect.height)
+            , transform (transformString svgRect.transform)
+            , fill svgRect.fillColor
+            , Mouse.onDown (\event -> StartDrag svgRect.id event.clientPos)
+            , Mouse.onUp (\_ -> UnDrag)
+            ]
+
+        attributes =
+            if svgRect.dragged then
+                Mouse.onMove (.clientPos >> KeepDragging) :: defaultAttributes
+
+            else
+                defaultAttributes
+    in
+    rect attributes []
 
 
 {-| Msg
 -}
 type Msg
     = ReceiveSvgMatrix SvgMatrix
-    | UnDrag String
+    | UnDrag
     | StartDrag String ClientPosition
     | KeepDragging ClientPosition
 
@@ -88,13 +109,30 @@ update msg model =
         KeepDragging clientPos ->
             ( updateKeepDragging model clientPos, Cmd.none )
 
-        UnDrag id ->
-            ( updateUnDrag model id, Cmd.none )
+        UnDrag ->
+            ( updateUnDrag model, Cmd.none )
 
 
 updateStartDrag : Model -> String -> ClientPosition -> Model
 updateStartDrag model id clientPos =
-    { model | drag = Dragged { id = id, startPos = clientPos, currentPos = clientPos, delta = ( 0, 0 ) } }
+    let
+        svgOuter =
+            model.svgOuter
+
+        updatedChildren =
+            List.map
+                (\elem ->
+                    if elem.id == id then
+                        { elem | dragged = True }
+
+                    else
+                        elem
+                )
+                svgOuter.children
+    in
+    { drag = Dragged { id = id, startPos = clientPos, currentPos = clientPos, delta = ( 0, 0 ) }
+    , svgOuter = { svgOuter | children = updatedChildren }
+    }
 
 
 updateKeepDragging : Model -> ClientPosition -> Model
@@ -139,21 +177,15 @@ updateReceiveSvgMatrix model svgMatrix =
     { model | svgOuter = { svgOuter | matrix = svgMatrix } }
 
 
-updateUnDrag : Model -> String -> Model
-updateUnDrag model id =
+updateUnDrag : Model -> Model
+updateUnDrag model =
     let
         svgOuter =
             model.svgOuter
 
         updatedChildren =
             List.map
-                (\elem ->
-                    if elem.id == id then
-                        { elem | position = elem.transform }
-
-                    else
-                        elem
-                )
+                (\elem -> { elem | position = elem.transform, dragged = False })
                 model.svgOuter.children
     in
     { drag = UnDragged
@@ -170,9 +202,9 @@ init _ =
             , viewBox = { minX = 0, minY = 0, width = 30, height = 20 }
             , matrix = { a = 0, b = 0, c = 0, d = 0, e = 0, f = 0 }
             , children =
-                [ { id = "big-rect", width = 30, height = 20, position = ( 0, 0 ), transform = ( 0, 0 ), fillColor = "#98e612" }
-                , { id = "left-rect", width = 8, height = 10, position = ( 4, 5 ), transform = ( 4, 5 ), fillColor = "#007bff" }
-                , { id = "right-rect", width = 8, height = 10, position = ( 18, 5 ), transform = ( 18, 5 ), fillColor = "#888" }
+                [ { id = "big-rect", width = 30, height = 20, position = ( 0, 0 ), transform = ( 0, 0 ), dragged = False, fillColor = "#98e612" }
+                , { id = "left-rect", width = 8, height = 10, position = ( 4, 5 ), transform = ( 4, 5 ), dragged = False, fillColor = "#007bff" }
+                , { id = "right-rect", width = 8, height = 10, position = ( 18, 5 ), transform = ( 18, 5 ), dragged = False, fillColor = "#888" }
                 ]
             }
       }
@@ -277,6 +309,7 @@ type alias SvgRectangle =
     , position : UserPosition
     , transform : SvgTransform
     , fillColor : String
+    , dragged : Bool
     }
 
 
