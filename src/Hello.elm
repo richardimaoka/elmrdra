@@ -28,7 +28,11 @@ view model =
         attributes =
             case model.drag of
                 Dragged _ ->
-                    Mouse.onMove (.clientPos >> KeepDragging) :: defaultAttributes
+                    List.append defaultAttributes
+                        [ Mouse.onMove (.clientPos >> KeepDragging)
+                        , Mouse.onUp (\_ -> UnDrag)
+                        , Mouse.onLeave (\_ -> UnDrag)
+                        ]
 
                 UnDragged ->
                     defaultAttributes
@@ -60,7 +64,6 @@ svgRectView svgRect =
         , transform (transformString svgRect.transform)
         , fill svgRect.fillColor
         , Mouse.onDown (\event -> StartDrag svgRect.id event.clientPos)
-        , Mouse.onUp (\_ -> UnDrag)
         ]
         []
 
