@@ -149,6 +149,10 @@ update msg model =
                 _ ->
                     ( Init, Cmd.none )
 
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Init, Cmd.none )
+
 
 mult : SvgMatrix -> ClientPosition -> ClientPosition -> SvgTransform
 mult svgMatrix dragStartPos dragCurrentPos =
@@ -195,22 +199,18 @@ isDraggableState model =
             False
 
 
+type alias DragState = {
+    startPos: ClientPosition,
+    currentPos: ClientPosition
+}
+
 type alias ClientPosition =
     ( Float, Float )
 
 
+
 type alias SvgTransform =
     ( Float, Float )
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Init, Cmd.none )
-
-
-
--- | DragStarted SvgMatrix
--- | BeingDragged SvgMatrix
 
 
 type alias SvgMatrix =
@@ -221,3 +221,8 @@ type alias SvgMatrix =
     , e : Float
     , f : Float
     }
+
+type SvgElementData = {
+    matrix: SvgMatrix,
+    transform: SvgTransform
+}
