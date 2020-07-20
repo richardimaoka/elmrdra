@@ -6,6 +6,7 @@ import Html.Attributes exposing (id, style)
 import Html.Events.Extra.Mouse as Mouse
 import Svg exposing (rect, svg)
 import Svg.Attributes exposing (fill, height, transform, viewBox, width, x, y)
+import Tuple exposing (first, second)
 
 
 main : Program () Model Msg
@@ -57,8 +58,7 @@ svgRectView svgRect =
 {-| Msg
 -}
 type Msg
-    = NoOp
-    | ReceiveSvgMatrix SvgMatrix
+    = ReceiveSvgMatrix SvgMatrix
     | UnDrag
     | StartDrag String ClientPosition
     | KeepDragging ClientPosition
@@ -81,25 +81,65 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ReceiveSvgMatrix svgMatrix ->
+            ( updateReceiveSvgMatrix model svgMatrix, Cmd.none )
+
+        StartDrag id clientPos ->
+            ( updateStartDrag model id clientPos, Cmd.none )
+
+        KeepDragging clientPos ->
+            ( updateKeepDragging model clientPos, Cmd.none )
+
+        UnDrag ->
+            ( updateUnDrag model, Cmd.none )
+
+
+updateStartDrag : Model -> String -> ClientPosition -> Model
+updateStartDrag model id clientPos =
+    { model | drag = Dragged { id = id, startPos = clientPos, currentPos = clientPos } }
+
+
+updateKeepDragging : Model -> ClientPosition -> Model
+updateKeepDragging model clientPos =
+    case model.drag of
+        Dragged draggable ->
             let
                 svgOuter =
                     model.svgOuter
+
+                updatedDraggable =
+                    { draggable | currentPos = clientPos }
+
+                updatedChildren =
+                    List.map
+                        (\elem ->
+                            if elem.id == draggable.id then
+                                { elem | transform = calcTransform updatedDraggable svgOuter.matrix }
+
+                            else
+                                elem
+                        )
+                        svgOuter.children
             in
-            ( { model | svgOuter = { svgOuter | matrix = svgMatrix } }, Cmd.none )
+            { drag = Dragged updatedDraggable
+            , svgOuter = { svgOuter | children = updatedChildren }
+            }
 
-        StartDrag id clientPos ->
-            ( { model | drag = Dragged { id = id, startPos = clientPos, currentPos = clientPos } }, Cmd.none )
+        UnDragged ->
+            model
 
-        KeepDragging clientPos ->
-            case model.drag of
-                Dragged dragged ->
-                    ( { model | drag = Dragged { dragged | currentPos = clientPos } }, Cmd.none )
 
-                UnDragged ->
-                    ( model, Cmd.none )
+updateReceiveSvgMatrix : Model -> SvgMatrix -> Model
+updateReceiveSvgMatrix model svgMatrix =
+    let
+        svgOuter =
+            model.svgOuter
+    in
+    { model | svgOuter = { svgOuter | matrix = svgMatrix } }
 
-        _ ->
-            ( model, Cmd.none )
+
+updateUnDrag : Model -> Model
+updateUnDrag model =
+    { model | drag = UnDragged }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -111,9 +151,9 @@ init _ =
             , viewBox = { minX = 0, minY = 0, width = 30, height = 20 }
             , matrix = { a = 0, b = 0, c = 0, d = 0, e = 0, f = 0 }
             , children =
-                [ { id = "dhu", width = 30, height = 20, transform = ( 0, 0 ), fillColor = "#98e612" }
-                , { id = "bbb", width = 8, height = 10, transform = ( 4, 5 ), fillColor = "#007bff" }
-                , { id = "bbc", width = 8, height = 10, transform = ( 18, 5 ), fillColor = "#888" }
+                [ { id = "big-rect", width = 30, height = 20, transform = ( 0, 0 ), fillColor = "#98e612" }
+                , { id = "left-rect", width = 8, height = 10, transform = ( 4, 5 ), fillColor = "#007bff" }
+                , { id = "right-rect", width = 8, height = 10, transform = ( 18, 5 ), fillColor = "#888" }
                 ]
             }
       }
@@ -129,11 +169,14 @@ type alias Model =
 
 type DragState
     = UnDragged
-    | Dragged
-        { id : String
-        , startPos : ClientPosition
-        , currentPos : ClientPosition
-        }
+    | Dragged Draggable
+
+
+type alias Draggable =
+    { id : String
+    , startPos : ClientPosition
+    , currentPos : ClientPosition
+    }
 
 
 type alias ClientPosition =
@@ -146,6 +189,18 @@ type alias UserPosition =
 
 type alias SvgTransform =
     ( Float, Float )
+
+
+calcTransform : Draggable -> SvgMatrix -> SvgTransform
+calcTransform draggable svgMatrix =
+    let
+        userStartPos =
+            mult svgMatrix draggable.startPos
+
+        userCurrentPos =
+            mult svgMatrix draggable.currentPos
+    in
+    ( first userCurrentPos - first userStartPos, second userCurrentPos - second userStartPos )
 
 
 transformString : SvgTransform -> String
