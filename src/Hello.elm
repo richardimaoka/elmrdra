@@ -49,7 +49,6 @@ svgRectView svgRect =
         , fill svgRect.fillColor
         , Mouse.onDown (\event -> StartDrag svgRect.id event.clientPos)
         , Mouse.onMove (.clientPos >> KeepDragging)
-        , Mouse.onLeave (\_ -> UnDrag)
         , Mouse.onUp (\_ -> UnDrag)
         ]
         []
@@ -113,7 +112,7 @@ updateKeepDragging model clientPos =
                     List.map
                         (\elem ->
                             if elem.id == draggable.id then
-                                { elem | transform = calcTransform updatedDraggable svgOuter.matrix }
+                                { elem | transform = updateTransformation elem.transform svgOuter.matrix updatedDraggable.currentPos updatedDraggable.startPos }
 
                             else
                                 elem
@@ -191,6 +190,21 @@ type alias SvgTransform =
     ( Float, Float )
 
 
+updateTransformation : UserPosition -> SvgMatrix -> ClientPosition -> ClientPosition -> UserPosition
+updateTransformation currentTransform svgMatrix dragCurrentPos dragStartPos =
+    addUserPosition currentTransform (subtractUserPosition (mult svgMatrix dragCurrentPos) (mult svgMatrix dragStartPos))
+
+
+subtractUserPosition : UserPosition -> UserPosition -> UserPosition
+subtractUserPosition userPos1 userPos2 =
+    ( first userPos1 - first userPos2, second userPos1 - second userPos2 )
+
+
+addUserPosition : UserPosition -> UserPosition -> UserPosition
+addUserPosition userPos1 userPos2 =
+    ( first userPos1 + first userPos2, second userPos1 + second userPos2 )
+
+
 calcTransform : Draggable -> SvgMatrix -> SvgTransform
 calcTransform draggable svgMatrix =
     let
@@ -200,7 +214,25 @@ calcTransform draggable svgMatrix =
         userCurrentPos =
             mult svgMatrix draggable.currentPos
     in
-    ( first userCurrentPos - first userStartPos, second userCurrentPos - second userStartPos )
+    subtractUserPosition userCurrentPos userStartPos
+
+
+mult : SvgMatrix -> ClientPosition -> UserPosition
+mult inverse clientPos =
+    let
+        clientX =
+            Tuple.first clientPos
+
+        clientY =
+            Tuple.second clientPos
+
+        userX =
+            inverse.a * clientX + inverse.c * clientY + inverse.e
+
+        userY =
+            inverse.b * clientX + inverse.d * clientY + inverse.f
+    in
+    ( userX, userY )
 
 
 transformString : SvgTransform -> String
@@ -232,24 +264,6 @@ type alias SvgOuter =
     , matrix : SvgMatrix
     , children : List SvgRectangle
     }
-
-
-mult : SvgMatrix -> ClientPosition -> UserPosition
-mult inverse clientPos =
-    let
-        clientX =
-            Tuple.first clientPos
-
-        clientY =
-            Tuple.second clientPos
-
-        userX =
-            inverse.a * clientX + inverse.c * clientY + inverse.e
-
-        userY =
-            inverse.b * clientX + inverse.d * clientY + inverse.f
-    in
-    ( userX, userY )
 
 
 type alias SvgRectangle =
