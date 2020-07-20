@@ -20,31 +20,7 @@ main =
 
 view : Model -> Html Msg
 view model =
-    case model of
-        State _ svgOuter ->
-            svgOuterView svgOuter
-
-
-
--- , rect
---     [ id "rect"
---     , Mouse.onDown (.clientPos >> DetectDragStart)
---     , Mouse.onMove
---         (\event ->
---             if isDraggableState model then
---                 ContinueDragging event.clientPos
---             else
---                 NoOp
---         )
---     , Mouse.onUp (\_ -> EndDragging)
---     , Mouse.onLeave (\_ -> EndDragging)
---     , x "0"
---     , y "0"
---     , width "8"
---     , height "10"
---     , fill "#007bff"
---     , transform (transformAttribute model)
---     ]
+    svgOuterView model.svgOuter
 
 
 svgOuterView : SvgOuter -> Html Msg
@@ -70,6 +46,10 @@ svgRectView svgRect =
         , height (String.fromFloat svgRect.height)
         , transform (transformString svgRect.transform)
         , fill svgRect.fillColor
+        , Mouse.onDown (\event -> StartDrag svgRect.id event.clientPos)
+        , Mouse.onMove (.clientPos >> KeepDragging)
+        , Mouse.onLeave (\_ -> UnDrag)
+        , Mouse.onUp (\_ -> UnDrag)
         ]
         []
 
@@ -79,9 +59,9 @@ svgRectView svgRect =
 type Msg
     = NoOp
     | ReceiveSvgMatrix SvgMatrix
-    | DetectDragStart ( Float, Float )
-    | ContinueDragging ( Float, Float )
-    | EndDragging
+    | UnDrag
+    | StartDrag String ClientPosition
+    | KeepDragging ClientPosition
 
 
 subscriptions : Model -> Sub Msg
@@ -101,88 +81,57 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ReceiveSvgMatrix svgMatrix ->
-            case model of
-                State dragState svgOuter ->
-                    ( State dragState { svgOuter | matrix = svgMatrix }, Cmd.none )
+            let
+                svgOuter =
+                    model.svgOuter
+            in
+            ( { model | svgOuter = { svgOuter | matrix = svgMatrix } }, Cmd.none )
+
+        StartDrag id clientPos ->
+            ( { model | drag = Dragged { id = id, startPos = clientPos, currentPos = clientPos } }, Cmd.none )
+
+        KeepDragging clientPos ->
+            case model.drag of
+                Dragged dragged ->
+                    ( { model | drag = Dragged { dragged | currentPos = clientPos } }, Cmd.none )
+
+                UnDragged ->
+                    ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
 
 
-
--- case msg of
---     NoOp ->
---         ( model, Cmd.none )
---     ReceiveSvgMatrix svgMatrix ->
---         case model of
---             Init ->
---                 ( SvgMatrixReceived svgMatrix, Cmd.none )
---             DragPositionDetected pos ->
---                 ( DragStarted svgMatrix pos, Cmd.none )
---             _ ->
---                 ( model, Cmd.none )
---     DetectDragStart pos ->
---         case model of
---             Init ->
---                 ( DragPositionDetected pos, Cmd.none )
---             SvgMatrixReceived matrix ->
---                 ( DragStarted matrix pos, Cmd.none )
---             _ ->
---                 ( model, Cmd.none )
---     ContinueDragging currentPos ->
---         case model of
---             DragStarted svgMatrix startPos ->
---                 ( BeingDragged
---                     { svgMatrix = svgMatrix
---                     , dragStartPos = startPos
---                     , dragCurrentPos = currentPos
---                     , svgTransform = ( 0.0, 0.0 )
---                     }
---                 , Cmd.none
---                 )
---             BeingDragged state ->
---                 ( BeingDragged
---                     { state
---                         | dragCurrentPos = currentPos
---                         , svgTransform = mult state.svgMatrix state.dragStartPos currentPos
---                     }
---                 , Cmd.none
---                 )
---             _ ->
---                 ( model, Cmd.none )
---     EndDragging ->
---         case model of
---             BeingDragged state ->
---                 ( DragEnded state.svgTransform, Cmd.none )
---             _ ->
---                 ( Init, Cmd.none )
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( State UnDragged
-        { width = 600
-        , height = 500
-        , viewBox = { minX = 0, minY = 0, width = 30, height = 20 }
-        , matrix = { a = 0, b = 0, c = 0, d = 0, e = 0, f = 0 }
-        , children =
-            [ { id = "dhu", width = 30, height = 20, transform = ( 0, 0 ), fillColor = "#98e612" }
-            , { id = "bbb", width = 8, height = 10, transform = ( 4, 5 ), fillColor = "#007bff" }
-            , { id = "bbb", width = 8, height = 10, transform = ( 18, 5 ), fillColor = "#888" }
-            ]
-        }
+    ( { drag = UnDragged
+      , svgOuter =
+            { width = 600
+            , height = 500
+            , viewBox = { minX = 0, minY = 0, width = 30, height = 20 }
+            , matrix = { a = 0, b = 0, c = 0, d = 0, e = 0, f = 0 }
+            , children =
+                [ { id = "dhu", width = 30, height = 20, transform = ( 0, 0 ), fillColor = "#98e612" }
+                , { id = "bbb", width = 8, height = 10, transform = ( 4, 5 ), fillColor = "#007bff" }
+                , { id = "bbc", width = 8, height = 10, transform = ( 18, 5 ), fillColor = "#888" }
+                ]
+            }
+      }
     , requestSvgMatrix "svg-outer"
     )
 
 
-type Model
-    = State DragState SvgOuter
+type alias Model =
+    { drag : DragState
+    , svgOuter : SvgOuter
+    }
 
 
 type DragState
     = UnDragged
     | Dragged
-        { startPos : ClientPosition
+        { id : String
+        , startPos : ClientPosition
         , currentPos : ClientPosition
         }
 
