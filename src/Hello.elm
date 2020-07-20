@@ -1,8 +1,8 @@
-port module Hello exposing (main, svgMatrixSubscription)
+port module Hello exposing (main, requestSvgMatrix, svgMatrixSubscription)
 
 import Browser
 import Html exposing (Html)
-import Html.Attributes exposing (id)
+import Html.Attributes exposing (id, style)
 import Html.Events.Extra.Mouse as Mouse
 import Svg exposing (rect, svg)
 import Svg.Attributes exposing (fill, height, transform, viewBox, width, x, y)
@@ -54,6 +54,7 @@ svgOuterView svgOuter =
         , height (String.fromFloat svgOuter.height)
         , width (String.fromFloat svgOuter.width)
         , viewBox (viewBoxString svgOuter.viewBox)
+        , style "border-style" "solid"
         ]
         (List.map
             svgRectView
@@ -91,11 +92,21 @@ subscriptions _ =
 port svgMatrixSubscription : (SvgMatrix -> msg) -> Sub msg
 
 
+port requestSvgMatrix : String -> Cmd msg
+
+
 {-| Model
 -}
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        ReceiveSvgMatrix svgMatrix ->
+            case model of
+                State dragState svgOuter ->
+                    ( State dragState { svgOuter | matrix = svgMatrix }, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 
@@ -151,16 +162,16 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( State UnDragged
         { width = 600
-        , height = 400
+        , height = 500
         , viewBox = { minX = 0, minY = 0, width = 30, height = 20 }
         , matrix = { a = 0, b = 0, c = 0, d = 0, e = 0, f = 0 }
         , children =
-            [ { id = "dhu", width = 30, height = 20, transform = ( 0, 0 ), fillColor = "#fafafa" }
+            [ { id = "dhu", width = 30, height = 20, transform = ( 0, 0 ), fillColor = "#98e612" }
             , { id = "bbb", width = 8, height = 10, transform = ( 4, 5 ), fillColor = "#007bff" }
             , { id = "bbb", width = 8, height = 10, transform = ( 18, 5 ), fillColor = "#888" }
             ]
         }
-    , Cmd.none
+    , requestSvgMatrix "svg-outer"
     )
 
 
