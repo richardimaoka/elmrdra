@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html class="text-gray-900 antialiased leading-tight">
+  <head>
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.css" rel="stylesheet">
+    <script src="requirement.js"></script>
+    <style>
+      --div  { border-style: solid; border-width: 1px; }  
+      --button  { border-style: solid; border-width: 1px; }  
+   </style>
+  </head>
+  <body>
+    <div id="elm-app"></div>
+  </body>
+  <script type="text/javascript">
+    var app = Elm.Requirement.init({node: document.getElementById('elm-app')});
+  </script>
+</html>
