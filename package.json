@@ -1,0 +1,20 @@
+{
+  "name": "elmrdra",
+  "version": "1.0.0",
+  "description": "",
+  "main": "hello.js",
+  "scripts": {
+    "hello": "elm-live src/Hello.elm --open --start-page=index.html -- --output=hello.js",
+    "requirement": "elm-live src/Requirement.elm --open --start-page=requirement.html -- --output=requirement.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardimaoka/elmrdra.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/richardimaoka/elmrdra/issues"
+  },
+  "homepage": "https://github.com/richardimaoka/elmrdra#readme"
+}
