@@ -1,0 +1,93 @@
+<!doctype html>
+<html class="text-gray-900 antialiased leading-tight">
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.css" rel="stylesheet">
+    <style>
+       div  { border-style: solid; border-width: 1px; }  
+       --button  { border-style: solid; border-width: 1px; }      
+       .align-self-center {
+         align-self: center;
+       }   
+       .grid-columns-auto-fit-200px {
+          grid-template-columns: repeat(auto-fit, 200px);
+       }
+       .col-end-minus1 {
+          grid-columns: repeat(auto-fit, 200px);
+       }
+    </style>
+  </head>
+  <body>
+    <div class="max-w-screen-lg mx-auto bg-gray-100">
+      <div class="grid grid-columns-auto-fit-200px gap-4">
+        <div style="grid-column: 1/2">
+          <div class="grid grid-cols-2">
+            <div class="col-span-2">svg buc</div>
+            <div class="col-span-2">buc name</div>
+            <div class="col-span-1 grid grid-cols-2">
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+            </div>
+            <div class="col-span-1 grid grid-cols-2">
+              <div class="col-span-1">actor svg</div>
+              <div class="col-span-1">actor name</div>
+              <div class="col-span-1">actor svg</div>
+              <div class="col-span-1">actor name</div>
+              <div class="col-span-1">actor svg</div>
+              <div class="col-span-1">actor name</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="grid-column: 2/3">
+          <div class="grid grid-cols-2">
+            <div class="col-span-2">svg buc</div>
+            <div class="col-span-2">buc name</div>
+            <div class="col-span-1 grid grid-cols-2">
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+            </div>
+            <div class="col-span-1 grid grid-cols-2">
+              <div class="col-span-1">actor svg</div>
+              <div class="col-span-1">actor name</div>
+              <div class="col-span-1">actor svg</div>
+              <div class="col-span-1">actor name</div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="grid-column: 1/2">
+          <div class="grid grid-cols-2">
+            <div class="col-span-2">svg buc</div>
+            <div class="col-span-2">buc name</div>
+            <div class="col-span-1 grid grid-cols-2">
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+              <div class="col-span-1">biz elem svg</div>
+              <div class="col-span-1">biz elem name</div>
+            </div>
+            <div class="col-span-1 grid grid-cols-2">
+              <div class="col-span-1">actor svg</div>
+              <div class="col-span-1">actor name</div>
+              <div class="col-span-1">actor svg</div>
+              <div class="col-span-1">actor name</div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </body>  
+  <script>
+  </script>
+</html> 
