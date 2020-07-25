@@ -1,0 +1,35 @@
+<!doctype html>
+<html class="text-gray-900 antialiased leading-tight">
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.css" rel="stylesheet">
+    <style>
+       div  { border-style: solid; border-width: 1px; }  
+       svg  { border-style: solid; border-width: 1px; }  
+       --button  { border-style: solid; border-width: 1px; }      
+    </style>
+  </head>
+  <body>
+    <div class="w-16">a</div>
+    <div class="w-16">b</div>
+    <div class="w-16">c</div>
+    <div class="w-16">d</div>
+    <div style="position: relative;" onclick="clickDiv(event)">
+      <div class="w-16" onclick="clickDiv(event)">e</div>
+      <div class="w-16" onclick="clickDiv(event)">f</div>
+      <div class="w-16" onclick="clickDiv(event)">g</div>
+      <div class="w-16" onclick="clickDiv(event)">h</div>
+      <svg style="position: absolute; top:10px; left: 20px;" width="300" height="300" onclick="clickSvg(event)"></svg>
+    </div>
+  </body>  
+  <script>
+    function clickDiv(e) {
+      e.stopPropagation();
+      console.log("div ", e.target.textContent , "clicked", e);
+    }
+    function clickSvg(e) {
+      e.stopPropagation();
+      console.log("svg ", e.target.textContent , "clicked", e);
+    }
+  </script>
+</html> 
