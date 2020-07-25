@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- Place your kit's code here -->
+    <script src="https://kit.fontawesome.com/57bd120ab3.js" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-array.v2.min.js"></script>
+    <script src="https://d3js.org/d3-color.v1.min.js"></script>
+    <script src="https://d3js.org/d3-format.v1.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+    <script src="https://d3js.org/d3-time.v1.min.js"></script>
+    <script src="https://d3js.org/d3-time-format.v2.min.js"></script>
+    <script src="https://d3js.org/d3-scale.v3.min.js"></script>
+    <style>
+      svg  { border-style: solid; border-width: 1px; }  
+    </style>
+  </head>
+  <body>  
+    <div>
+      <svg id="svg" width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <g id="info">
+            <polygon points="388.57 57.28 113.56 57.28 113.56 259.91 113.56 267.76 113.56 582.72 526.41 582.72 526.41 267.76 526.41 259.91 526.41 196.64 388.57 57.28" style="fill:#fff;stroke:#201f21;stroke-miterlimit:10;stroke-width:10px"/>
+            <polygon points="388.96 57.28 388.96 196.46 526.45 196.46 388.96 57.28" style="fill:#fff;stroke:#201f21;stroke-linejoin:round;stroke-width:10px"/>
+            <rect x="139.59" y="224.68" width="344.53" height="50.67" style="fill:#201f21"/>
+            <rect x="139.59" y="310.89" width="265.43" height="50.67" style="fill:#201f21"/>
+            <rect x="139.59" y="397.1" width="308.28" height="50.26" style="fill:#201f21"/>
+            <rect x="139.59" y="482.9" width="308.28" height="50.26" style="fill:#201f21"/>    
+          </g>
+        </defs>
+      </svg>
+    </div>
+  </body>
+  <script>
+    var data = {
+      children: [
+        {
+          children: [
+            { group: 0, groupName: "継続的サービス提供", value: 1, name: "会員" },
+            { group: 0, groupName: "継続的サービス提供", value: 1, name: "QA履歴" },
+            { group: 0, groupName: "継続的サービス提供", value: 1, name: "インシデント" },
+            { group: 0, groupName: "継続的サービス提供", value: 1, name: "サービス利用実績" },
+            { group: 0, groupName: "継続的サービス提供", value: 1, name: "サポート" },
+            { group: 0, groupName: "継続的サービス提供", value: 1, name: "課金情報" }
+          ]
+        },
+        {
+          children: [
+            { group: 1, groupName: "受注", value: 1, name: "商談記録" },
+            { group: 1, groupName: "受注", value: 1, name: "契約" },
+            { group: 1, groupName: "受注", value: 1, name: "決済方法" },
+            { group: 1, groupName: "受注", value: 1, name: "得意先" },
+            { group: 1, groupName: "受注", value: 1, name: "受注" },
+            { group: 1, groupName: "受注", value: 1, name: "見積" },
+            { group: 1, groupName: "受注", value: 1, name: "流通サービス仕様" },
+            { group: 1, groupName: "受注", value: 1, name: "納品先" },
+            { group: 1, groupName: "受注", value: 1, name: "受注残" },
+            { group: 1, groupName: "受注", value: 1, name: "引当済商品" },
+            { group: 1, groupName: "受注", value: 1, name: "出荷指示" },
+            { group: 1, groupName: "受注", value: 1, name: "出荷" }
+          ]
+        },
+        {
+          children: [
+            { group: 2, groupName: "在庫", value: 1, name: "理論在庫" },
+            { group: 2, groupName: "在庫", value: 1, name: "物理在庫" }
+          ]
+        },
+        {
+          children: [
+            { group: 3, groupName: "発注", value: 1, name: "発注残" },
+            { group: 3, groupName: "発注", value: 1, name: "入荷" },
+            { group: 3, groupName: "発注", value: 1, name: "発注" },
+            { group: 3, groupName: "発注", value: 1, name: "仕入先" }
+          ]
+        },
+        {
+          children: [
+            { group: 4, groupName: "返品", value: 1, name: "破棄記録" },
+            { group: 4, groupName: "返品", value: 1, name: "返品受付" },
+            { group: 4, groupName: "返品", value: 1, name: "再生品" }
+          ]
+        },
+        {
+          children: [
+            { group: 5, groupName: "入出庫", value: 1, name: "出庫" },
+            { group: 5, groupName: "入出庫", value: 1, name: "配送手段" },
+            { group: 5, groupName: "入出庫", value: 1, name: "入庫" },
+            { group: 5, groupName: "入出庫", value: 1, name: "検品記録" }
+          ]
+        },
+        {
+          children: [
+            { group: 6, groupName: "債権債務", value: 1, name: "売上" },
+            { group: 6, groupName: "債権債務", value: 1, name: "請求実績" },
+            { group: 6, groupName: "債権債務", value: 1, name: "入金" },
+            { group: 6, groupName: "債権債務", value: 1, name: "債権残高" },
+            { group: 6, groupName: "債権債務", value: 1, name: "売上" },
+            { group: 6, groupName: "債権債務", value: 1, name: "仕入れ" },
+            { group: 6, groupName: "債権債務", value: 1, name: "債務残高" },
+            { group: 6, groupName: "債権債務", value: 1, name: "支払" }
+          ]
+        }
+
+      ]
+    };
+
+    console.log(data);
+    var width=600, height=600, n=6+12+2+4+2+4+8, m=6;
+
+    var pack = () => d3.pack()
+        .size([width, height])
+        .padding(1)
+      (d3.hierarchy(data)
+        .sum(d => d.value))
+
+    const nodes = pack().leaves();
+    console.log(nodes);
+
+    const svg = d3.select("#svg");
+    
+    const simulation = d3.forceSimulation(nodes)
+      .force("x", d3.forceX(width / 2).strength(0.01))
+      .force("y", d3.forceY(height / 2).strength(0.01))
+      .force("cluster", forceCluster())
+      .force("collide", forceCollide());
+    
+    var color = d3.scaleOrdinal(d3.range(m), d3.schemeCategory10);
+
+    var drag = simulation => { 
+      function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+      
+      function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }
+      
+      function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+      
+      return d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended);
+    }
+
+    const node = svg.append("g")
+      .selectAll("circle")
+      .data(nodes)
+      .join("svg")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y)
+
+        .attr("viewBox", "0 0 12800 12800")
+          .append("use")
+          .attr("xlink:href", "#info")
+          .attr("fill", d => color(d.data.group))
+          .call(drag(simulation));
+
+        // const node = svg.append("g")
+    //   .selectAll("circle")
+    //   .data(nodes)
+    //   .join("circle")
+    //     .attr("cx", d => d.x)
+    //     .attr("cy", d => d.y)
+    //     .attr("fill", d => color(d.data.group))
+    //     .call(drag(simulation));
+
+    //  const node = svg.append("g")
+    //   .selectAll("circle")
+    //   .data(nodes)
+    //   .join("rect")
+    //     .attr("x", d => d.x)
+    //     .attr("y", d => d.y)
+    //     .attr("width", 40)
+    //     .attr("height", 60)
+    //     .attr("fill", d => color(d.data.group))
+    //     .call(drag(simulation));
+    
+    node.transition()
+      .delay((d, i) => Math.random() * 500)
+      .duration(750)
+      .attrTween("r", d => {
+        const i = d3.interpolate(0, d.r);
+        return t => d.r = i(t);
+      });
+
+    simulation.on("tick", () => {
+    node
+        .attr("x", d => d.x)
+        .attr("y", d => d.y);
+    });
+
+    function centroid(nodes) {
+      let x = 0;
+      let y = 0;
+      let z = 0;
+      for (const d of nodes) {
+        let k = d.r ** 2;
+        x += d.x * k;
+        y += d.y * k;
+        z += k;
+      }
+      return {x: x / z, y: y / z};
+    }
+ 
+
+
+    function forceCluster() {
+      const strength = 0.2;
+      let nodes;
+
+      function force(alpha) {
+        const centroids = d3.rollup(nodes, centroid, d => d.data.group);
+        const l = alpha * strength;
+        for (const d of nodes) {
+          const {x: cx, y: cy} = centroids.get(d.data.group);
+          d.vx -= (d.x - cx) * l;
+          d.vy -= (d.y - cy) * l;
+        }
+      }
+
+      force.initialize = _ => nodes = _;
+
+      return force;
+    }
+    function forceCollide() {
+      const alpha = 0.4; // fixed for greater rigidity!
+      const padding1 = 2; // separation between same-color nodes
+      const padding2 = 6; // separation between different-color nodes
+      let nodes;
+      let maxRadius;
+
+      function force() {
+        const quadtree = d3.quadtree(nodes, d => d.x, d => d.y);
+        for (const d of nodes) {
+          const r = d.r + maxRadius;
+          const nx1 = d.x - r, ny1 = d.y - r;
+          const nx2 = d.x + r, ny2 = d.y + r;
+          quadtree.visit((q, x1, y1, x2, y2) => {
+            if (!q.length) do {
+              if (q.data !== d) {
+                const r = d.r + q.data.r + (d.data.group === q.data.data.group ? padding1 : padding2);
+                let x = d.x - q.data.x, y = d.y - q.data.y, l = Math.hypot(x, y);
+                if (l < r) {
+                  l = (l - r) / l * alpha;
+                  d.x -= x *= l, d.y -= y *= l;
+                  q.data.x += x, q.data.y += y;
+                }
+              }
+            } while (q = q.next);
+            return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+          });
+        }
+      }
+
+      force.initialize = _ => maxRadius = d3.max(nodes = _, d => d.r) + Math.max(padding1, padding2);
+
+      return force;
+    }
+
+  </script>
+</html>
