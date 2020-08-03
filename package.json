@@ -5,6 +5,7 @@
   "main": "hello.js",
   "scripts": {
     "actor": "elm-live src/Actor.elm --open --start-page=actor.html -- --output=actor.js",
+    "textarea": "elm-live src/TextArea.elm --open --start-page=textarea.html -- --output=textarea.js",
     "hello": "elm-live src/Hello.elm --open --start-page=index.html -- --output=hello.js",
     "requirement": "elm-live src/Requirement.elm --open --start-page=requirement.html -- --output=requirement.js"
   },
