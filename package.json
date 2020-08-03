@@ -4,6 +4,7 @@
   "description": "",
   "main": "hello.js",
   "scripts": {
+    "actor": "elm-live src/Actor.elm --open --start-page=actor.html -- --output=actor.js",
     "hello": "elm-live src/Hello.elm --open --start-page=index.html -- --output=hello.js",
     "requirement": "elm-live src/Requirement.elm --open --start-page=requirement.html -- --output=requirement.js"
   },
