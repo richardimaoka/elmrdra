@@ -3,7 +3,7 @@ module Listing exposing (main)
 import Browser
 import Browser.Dom as Dom
 import Html exposing (Attribute, Html, button, div, text, textarea)
-import Html.Attributes exposing (class, id, value)
+import Html.Attributes exposing (class, draggable, id, value)
 import Html.Events exposing (keyCode, onBlur, onClick, onInput, preventDefaultOn)
 import Json.Decode as Decode
 import Task
@@ -34,9 +34,11 @@ view model =
         )
 
 
-addButton : Html Msg
-addButton =
-    button [ onClick OpenTextArea ] [ text "add" ]
+requirementView : String -> Html Msg
+requirementView requirementText =
+    div []
+        [ div [ draggable "true" ] [ text requirementText ]
+        ]
 
 
 requirementInputView : String -> Html Msg
@@ -66,14 +68,13 @@ onEnter msg =
         alwaysPreventDefault =
             \code -> ( code, True )
     in
+    -- preventDefaultOn not to trigger onBlur, and alwaysPreventDefault to always prevent onBlur
     preventDefaultOn "keydown" (Decode.map alwaysPreventDefault (Decode.andThen isEnter keyCode))
 
 
-requirementView : String -> Html Msg
-requirementView requirementText =
-    div []
-        [ div [] [ text requirementText ]
-        ]
+addButton : Html Msg
+addButton =
+    button [ onClick OpenTextArea ] [ text "add" ]
 
 
 {-| Msg

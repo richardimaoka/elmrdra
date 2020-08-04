@@ -10688,6 +10688,7 @@ var $author$project$Listing$requirementInputView = function (requirementText) {
 				_List_Nil)
 			]));
 };
+var $elm$html$Html$Attributes$draggable = _VirtualDom_attribute('draggable');
 var $author$project$Listing$requirementView = function (requirementText) {
 	return A2(
 		$elm$html$Html$div,
@@ -10696,7 +10697,10 @@ var $author$project$Listing$requirementView = function (requirementText) {
 			[
 				A2(
 				$elm$html$Html$div,
-				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$draggable('true')
+					]),
 				_List_fromArray(
 					[
 						$elm$html$Html$text(requirementText)
