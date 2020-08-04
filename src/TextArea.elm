@@ -34,7 +34,7 @@ update : Msg -> Model -> Model
 update msg _ =
     case msg of
         Input inputText ->
-            "inputText"
+            inputText
 
 
 init : Model
