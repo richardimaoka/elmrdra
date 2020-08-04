@@ -1,5 +1,6 @@
 module Listing exposing (main)
 
+import Array exposing (Array)
 import Browser
 import Browser.Dom as Dom
 import Html exposing (Attribute, Html, button, div, text, textarea)
@@ -22,16 +23,22 @@ main =
 view : Model -> Html Msg
 view model =
     div [ class "max-w-xs" ]
-        (List.append
-            (List.map requirementView model.requirements)
-            [ case model.input of
-                Just requirementInput ->
-                    requirementInputView requirementInput.inputText
-
-                Nothing ->
-                    addButton
-            ]
+        (Array.toList
+            (Array.push
+                (lastElementView model.input)
+                (Array.map requirementView model.requirements)
+            )
         )
+
+
+lastElementView : Maybe RequirementInput -> Html Msg
+lastElementView maybeReq =
+    case maybeReq of
+        Just requirementInput ->
+            requirementInputView requirementInput.inputText
+
+        Nothing ->
+            addButton
 
 
 requirementView : String -> Html Msg
@@ -106,7 +113,7 @@ update msg model =
         FinishTextArea ->
             case model.input of
                 Just requirementInput ->
-                    ( { input = Nothing, requirements = List.append model.requirements [ requirementInput.inputText ] }, Cmd.none )
+                    ( { input = Nothing, requirements = Array.push requirementInput.inputText model.requirements }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -118,7 +125,7 @@ update msg model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { input = Nothing
-      , requirements = []
+      , requirements = Array.empty
       }
     , Cmd.none
     )
@@ -126,7 +133,7 @@ init _ =
 
 type alias Model =
     { input : Maybe RequirementInput
-    , requirements : List String
+    , requirements : Array String
     }
 
 

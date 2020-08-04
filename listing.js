@@ -10538,7 +10538,7 @@ var $elm$core$Basics$never = function (_v0) {
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Listing$init = function (_v0) {
 	return _Utils_Tuple2(
-		{input: $elm$core$Maybe$Nothing, requirements: _List_Nil},
+		{input: $elm$core$Maybe$Nothing, requirements: $elm$core$Array$empty},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -10604,11 +10604,7 @@ var $author$project$Listing$update = F2(
 					return _Utils_Tuple2(
 						{
 							input: $elm$core$Maybe$Nothing,
-							requirements: A2(
-								$elm$core$List$append,
-								model.requirements,
-								_List_fromArray(
-									[requirementInput.inputText]))
+							requirements: A2($elm$core$Array$push, requirementInput.inputText, model.requirements)
 						},
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -10688,6 +10684,39 @@ var $author$project$Listing$requirementInputView = function (requirementText) {
 				_List_Nil)
 			]));
 };
+var $author$project$Listing$lastElementView = function (maybeReq) {
+	if (maybeReq.$ === 'Just') {
+		var requirementInput = maybeReq.a;
+		return $author$project$Listing$requirementInputView(requirementInput.inputText);
+	} else {
+		return $author$project$Listing$addButton;
+	}
+};
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
 var $elm$html$Html$Attributes$draggable = _VirtualDom_attribute('draggable');
 var $author$project$Listing$requirementView = function (requirementText) {
 	return A2(
@@ -10714,21 +10743,11 @@ var $author$project$Listing$view = function (model) {
 			[
 				$elm$html$Html$Attributes$class('max-w-xs')
 			]),
-		A2(
-			$elm$core$List$append,
-			A2($elm$core$List$map, $author$project$Listing$requirementView, model.requirements),
-			_List_fromArray(
-				[
-					function () {
-					var _v0 = model.input;
-					if (_v0.$ === 'Just') {
-						var requirementInput = _v0.a;
-						return $author$project$Listing$requirementInputView(requirementInput.inputText);
-					} else {
-						return $author$project$Listing$addButton;
-					}
-				}()
-				])));
+		$elm$core$Array$toList(
+			A2(
+				$elm$core$Array$push,
+				$author$project$Listing$lastElementView(model.input),
+				A2($elm$core$Array$map, $author$project$Listing$requirementView, model.requirements))));
 };
 var $author$project$Listing$main = $elm$browser$Browser$element(
 	{
