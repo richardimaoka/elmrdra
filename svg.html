@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="hello.js"></script>
+  </head>
+  <body>
+    <div id="elm-app"></div>
+  </body>
+  <script type="text/javascript">
+    var app = Elm.Hello.init({node: document.getElementById('elm-app')});
+
+    console.log(app.ports);
+    app.ports.requestSvgMatrix.subscribe(sendSvgInverseMatrix);
+
+    function sendSvgInverseMatrix(id) {
+      var svg = document.getElementById(id);
+      var CTM = svg.getScreenCTM();
+      var inverse = CTM.inverse();
+      console.log(CTM);
+      console.log(inverse);
+      console.log("--------")
+      app.ports.svgMatrixSubscription.send(inverse);
+    }
+
+  </script>
+</html>
