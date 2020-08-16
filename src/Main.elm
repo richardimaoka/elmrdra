@@ -37,10 +37,19 @@ view model =
                     div [] []
 
                 Just actor ->
-                    div [ onClick StartEditing ]
+                    div [ onClick OpenActionSelector ]
                         [ viewActorSvg
                         , div [] [ text <| actorName actor ]
                         ]
+
+        SelectingAction actor ->
+            div
+                [ onClick CancelActionSelector ]
+                [ viewActorSvg
+                , viewActorName actor
+                , div [ onClick StartEditing ] [ text "rename" ]
+                , div [ onClick DeleteActor ] [ text "delete" ]
+                ]
 
 
 viewActorSvg : Html Msg
@@ -48,6 +57,11 @@ viewActorSvg =
     svg [ width "50", height "50", viewBox "0 0 50 50" ]
         [ circle [ cx "25", cy "25", r "25" ] []
         ]
+
+
+viewActorName : Actor -> Html Msg
+viewActorName actor =
+    div [] [ text <| actorName actor ]
 
 
 viewActorNameInput : Actor -> Html Msg
@@ -82,9 +96,12 @@ onEnter msg =
 {-| Msg
 -}
 type Msg
-    = EditName String
-    | FinishEditingName
+    = OpenActionSelector
+    | DeleteActor
+    | CancelActionSelector
     | StartEditing
+    | FinishEditingName
+    | EditName String
     | Focus (Result Dom.Error ())
 
 
@@ -106,13 +123,19 @@ update msg model =
             else
                 ( Fixed <| Just actor, Cmd.none )
 
+        ( OpenActionSelector, Fixed (Just actor) ) ->
+            ( SelectingAction actor, Cmd.none )
+
+        ( CancelActionSelector, Fixed (Just actor) ) ->
+            ( Fixed <| Just actor, Cmd.none )
+
         _ ->
             ( model, Cmd.none )
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Editing <| Actor { id = "actor1", name = "hel" }
+    ( Editing <| Actor { id = "actor1", name = "" }
     , Task.attempt Focus (Dom.focus "input-actor1")
     )
 
@@ -120,6 +143,7 @@ init _ =
 type Model
     = Editing Actor
     | Fixed (Maybe Actor)
+    | SelectingAction Actor
 
 
 type Actor
