@@ -7,6 +7,8 @@ import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (id, value)
 import Html.Events exposing (keyCode, onBlur, onClick, onInput, preventDefaultOn)
 import Json.Decode as Decode
+import Svg exposing (circle, svg)
+import Svg.Attributes exposing (cx, cy, height, r, viewBox, width)
 import Task
 
 
@@ -22,10 +24,48 @@ main =
 
 view : Model -> Html Msg
 view model =
-    div [] <|
-        List.append
-            (viewRequirementList model.requirements model.selected)
-            [ viewAddButton ]
+    div []
+        [ -- single requirement set
+          div []
+            [ div []
+                [ viewActorSvg
+                , viewActorName model.actor
+                ]
+            , div [] <|
+                List.append
+                    (viewRequirementList model.requirements model.selected)
+                    [ buttonAddRequirement ]
+            ]
+
+        -- button to add actor and requirement
+        , buttonAddActorRequirement
+        ]
+
+
+buttonAddActorRequirement : Html Msg
+buttonAddActorRequirement =
+    button [] [ text "add" ]
+
+
+viewActorSvg : Html Msg
+viewActorSvg =
+    svg [ width "50", height "50", viewBox "0 0 50 50" ]
+        [ circle [ cx "25", cy "25", r "25" ] []
+        ]
+
+
+viewActorName : Actor -> Html Msg
+viewActorName actor =
+    div [] [ text <| actorName actor ]
+
+
+viewActorNameInput : Actor -> Html Msg
+viewActorNameInput actor =
+    input
+        [ id <| "input-" ++ actorId actor
+        , value <| actorName actor
+        ]
+        []
 
 
 viewRequirementList : Array Requirement -> Selection -> List (Html Msg)
@@ -104,8 +144,8 @@ viewRequirementDropdown ( index, requirement ) =
         ]
 
 
-viewAddButton : Html Msg
-viewAddButton =
+buttonAddRequirement : Html Msg
+buttonAddRequirement =
     button [ onClick AddRequirement ] [ text "add" ]
 
 
@@ -131,8 +171,9 @@ update msg model =
                 indexNewRequirement =
                     Array.length model.requirements
             in
-            ( { requirements = Array.push { id = "a", text = "" } model.requirements
-              , selected = Input indexNewRequirement
+            ( { model
+                | requirements = Array.push { id = "a", text = "" } model.requirements
+                , selected = Input indexNewRequirement
               }
             , Task.attempt Focus (Dom.focus <| inputHtmlTagId indexNewRequirement)
             )
@@ -162,8 +203,9 @@ update msg model =
                 arr2 =
                     Array.slice (index + 1) (Array.length model.requirements) model.requirements
             in
-            ( { requirements = Array.append arr1 arr2
-              , selected = NotSelected
+            ( { model
+                | requirements = Array.append arr1 arr2
+                , selected = NotSelected
               }
             , Cmd.none
             )
@@ -177,13 +219,17 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { requirements = Array.fromList [], selected = NotSelected }
+    ( { actor = Actor { id = "", name = "actrrr" }
+      , requirements = Array.fromList []
+      , selected = NotSelected
+      }
     , Cmd.none
     )
 
 
 type alias Model =
-    { requirements : Array Requirement
+    { actor : Actor
+    , requirements : Array Requirement
     , selected : Selection
     }
 
@@ -198,3 +244,20 @@ type Selection
     = NotSelected
     | Input Int
     | DropDownActions Int
+
+
+type Actor
+    = Actor
+        { id : String
+        , name : String
+        }
+
+
+actorName : Actor -> String
+actorName (Actor record) =
+    record.name
+
+
+actorId : Actor -> String
+actorId (Actor record) =
+    record.id

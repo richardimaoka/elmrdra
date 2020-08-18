@@ -10536,10 +10536,15 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Main$Actor = function (a) {
+	return {$: 'Actor', a: a};
+};
 var $author$project$Main$NotSelected = {$: 'NotSelected'};
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		{
+			actor: $author$project$Main$Actor(
+				{id: '', name: 'actrrr'}),
 			requirements: $elm$core$Array$fromList(_List_Nil),
 			selected: $author$project$Main$NotSelected
 		},
@@ -10707,13 +10712,15 @@ var $author$project$Main$update = F2(
 			case 'AddRequirement':
 				var indexNewRequirement = $elm$core$Array$length(model.requirements);
 				return _Utils_Tuple2(
-					{
-						requirements: A2(
-							$elm$core$Array$push,
-							{id: 'a', text: ''},
-							model.requirements),
-						selected: $author$project$Main$Input(indexNewRequirement)
-					},
+					_Utils_update(
+						model,
+						{
+							requirements: A2(
+								$elm$core$Array$push,
+								{id: 'a', text: ''},
+								model.requirements),
+							selected: $author$project$Main$Input(indexNewRequirement)
+						}),
 					A2(
 						$elm$core$Task$attempt,
 						$author$project$Main$Focus,
@@ -10768,10 +10775,12 @@ var $author$project$Main$update = F2(
 					model.requirements);
 				var arr1 = A3($elm$core$Array$slice, 0, index, model.requirements);
 				return _Utils_Tuple2(
-					{
-						requirements: A2($elm$core$Array$append, arr1, arr2),
-						selected: $author$project$Main$NotSelected
-					},
+					_Utils_update(
+						model,
+						{
+							requirements: A2($elm$core$Array$append, arr1, arr2),
+							selected: $author$project$Main$NotSelected
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'GoStatic':
 				return _Utils_Tuple2(
@@ -10783,8 +10792,15 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Main$buttonAddActorRequirement = A2(
+	$elm$html$Html$button,
+	_List_Nil,
+	_List_fromArray(
+		[
+			$elm$html$Html$text('add')
+		]));
 var $author$project$Main$AddRequirement = {$: 'AddRequirement'};
-var $author$project$Main$viewAddButton = A2(
+var $author$project$Main$buttonAddRequirement = A2(
 	$elm$html$Html$button,
 	_List_fromArray(
 		[
@@ -10793,6 +10809,49 @@ var $author$project$Main$viewAddButton = A2(
 	_List_fromArray(
 		[
 			$elm$html$Html$text('add')
+		]));
+var $author$project$Main$actorName = function (_v0) {
+	var record = _v0.a;
+	return record.name;
+};
+var $author$project$Main$viewActorName = function (actor) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				$author$project$Main$actorName(actor))
+			]));
+};
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $author$project$Main$viewActorSvg = A2(
+	$elm$svg$Svg$svg,
+	_List_fromArray(
+		[
+			$elm$svg$Svg$Attributes$width('50'),
+			$elm$svg$Svg$Attributes$height('50'),
+			$elm$svg$Svg$Attributes$viewBox('0 0 50 50')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$circle,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$cx('25'),
+					$elm$svg$Svg$Attributes$cy('25'),
+					$elm$svg$Svg$Attributes$r('25')
+				]),
+			_List_Nil)
 		]));
 var $elm$core$Array$toIndexedList = function (array) {
 	var len = array.a;
@@ -10974,11 +11033,32 @@ var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
-		A2(
-			$elm$core$List$append,
-			A2($author$project$Main$viewRequirementList, model.requirements, model.selected),
-			_List_fromArray(
-				[$author$project$Main$viewAddButton])));
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$author$project$Main$viewActorSvg,
+								$author$project$Main$viewActorName(model.actor)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						A2(
+							$elm$core$List$append,
+							A2($author$project$Main$viewRequirementList, model.requirements, model.selected),
+							_List_fromArray(
+								[$author$project$Main$buttonAddRequirement])))
+					])),
+				$author$project$Main$buttonAddActorRequirement
+			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
