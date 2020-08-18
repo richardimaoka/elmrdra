@@ -4,6 +4,7 @@
   "description": "",
   "main": "hello.js",
   "scripts": {
+    "main": "elm-live src/Main.elm --open --start-page=index.html -- --output=main.js   --debug",
     "actor": "elm-live src/Actor.elm --open --start-page=actor.html -- --output=actor.js",
     "textarea": "elm-live src/TextArea.elm --open --start-page=textarea.html -- --output=textarea.js",
     "listing": "elm-live src/Listing.elm --open --start-page=listing.html -- --output=listing.js  --debug",

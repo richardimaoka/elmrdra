@@ -3,9 +3,10 @@ module Main exposing (main)
 import Array exposing (Array)
 import Browser
 import Browser.Dom as Dom
-import Html exposing (Html, button, div, input, text)
+import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (id, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (keyCode, onBlur, onClick, onInput, preventDefaultOn)
+import Json.Decode as Decode
 import Task
 
 
@@ -64,7 +65,9 @@ viewRequirementInput ( index, requirement ) =
         [ input
             [ id <| inputHtmlTagId index
             , value requirement.text
-            , onInput <| UpdateRequirementText ( index, requirement )
+            , onBlur GoStatic
+            , onEnter GoStatic
+            , onInput <| UpdateText ( index, requirement )
             ]
             []
         ]
@@ -73,6 +76,23 @@ viewRequirementInput ( index, requirement ) =
 inputHtmlTagId : Int -> String
 inputHtmlTagId index =
     "input-requirement-" ++ String.fromInt index
+
+
+onEnter : Msg -> Attribute Msg
+onEnter msg =
+    let
+        isEnter code =
+            if code == 13 then
+                Decode.succeed msg
+
+            else
+                Decode.fail "not ENTER"
+
+        alwaysPreventDefault =
+            \code -> ( code, True )
+    in
+    -- preventDefaultOn not to trigger onBlur, and alwaysPreventDefault to always prevent onBlur
+    preventDefaultOn "keydown" (Decode.map alwaysPreventDefault (Decode.andThen isEnter keyCode))
 
 
 viewRequirementDropdown : ( Int, Requirement ) -> Html Msg
@@ -93,10 +113,11 @@ viewAddButton =
 -}
 type Msg
     = AddRequirement
-    | UpdateRequirementText ( Int, Requirement ) String
+    | UpdateText ( Int, Requirement ) String
     | ShowSelection Int
     | OpenInput Int
     | Delete Int
+    | GoStatic
     | Focus (Result Dom.Error ())
 
 
@@ -116,7 +137,7 @@ update msg model =
             , Task.attempt Focus (Dom.focus <| inputHtmlTagId indexNewRequirement)
             )
 
-        UpdateRequirementText ( index, requirement ) newText ->
+        UpdateText ( index, requirement ) newText ->
             ( { model
                 | requirements = Array.set index { requirement | text = newText } model.requirements
               }
@@ -146,6 +167,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        GoStatic ->
+            ( { model | selected = NotSelected }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
