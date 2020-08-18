@@ -1,51 +1,152 @@
-module Actor exposing (main)
+module Actor exposing (Actor(..), Model(..), Msg, view)
 
-import Browser
-import Html exposing (Html, div, input, text)
-import Html.Attributes exposing (value)
-import Html.Events exposing (onInput)
-import Svg exposing (circle, path, svg)
-import Svg.Attributes exposing (cx, cy, d, height, r, style, transform, viewBox, width)
-
-
-main : Program () Model Msg
-main =
-    Browser.sandbox
-        { init = init
-        , update = update
-        , view = view
-        }
+import Browser.Dom as Dom
+import Html exposing (Attribute, Html, div, input, text)
+import Html.Attributes exposing (id, value)
+import Html.Events exposing (keyCode, onBlur, onClick, onInput, preventDefaultOn)
+import Json.Decode as Decode
+import Svg exposing (circle, svg)
+import Svg.Attributes exposing (cx, cy, height, r, viewBox, width)
+import Task
 
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ svg [ width "100", height "100", viewBox "0 0 100 100" ]
-            [ circle [ cx "50", cy "50", r "50" ] []
-            ]
-        , div [] [ input [ value model, onInput Input ] [] ]
+    case model of
+        Editing actor ->
+            div
+                []
+                [ viewActorSvg
+                , div [] [ viewActorNameInput actor ]
+                ]
+
+        Fixed maybeActor ->
+            case maybeActor of
+                Nothing ->
+                    div [] []
+
+                Just actor ->
+                    div [ onClick OpenActionSelector ]
+                        [ viewActorSvg
+                        , div [] [ text <| actorName actor ]
+                        ]
+
+        SelectingAction actor ->
+            div
+                [ onClick CancelActionSelector ]
+                [ viewActorSvg
+                , viewActorName actor
+                , div [ onClick StartEditing ] [ text "rename" ]
+                , div [ onClick DeleteActor ] [ text "delete" ]
+                ]
+
+
+viewActorSvg : Html Msg
+viewActorSvg =
+    svg [ width "50", height "50", viewBox "0 0 50 50" ]
+        [ circle [ cx "25", cy "25", r "25" ] []
         ]
+
+
+viewActorName : Actor -> Html Msg
+viewActorName actor =
+    div [] [ text <| actorName actor ]
+
+
+viewActorNameInput : Actor -> Html Msg
+viewActorNameInput actor =
+    input
+        [ id <| "input-" ++ actorId actor
+        , value <| actorName actor
+        , onInput EditName
+        , onBlur FinishEditingName
+        , onEnter FinishEditingName
+        ]
+        []
+
+
+onEnter : Msg -> Attribute Msg
+onEnter msg =
+    let
+        isEnter code =
+            if code == 13 then
+                Decode.succeed msg
+
+            else
+                Decode.fail "not ENTER"
+
+        alwaysPreventDefault =
+            \code -> ( code, True )
+    in
+    -- preventDefaultOn not to trigger onBlur, and alwaysPreventDefault to always prevent onBlur
+    preventDefaultOn "keydown" (Decode.map alwaysPreventDefault (Decode.andThen isEnter keyCode))
 
 
 {-| Msg
 -}
 type Msg
-    = Input String
+    = OpenActionSelector
+    | DeleteActor
+    | CancelActionSelector
+    | StartEditing
+    | FinishEditingName
+    | EditName String
+    | Focus (Result Dom.Error ())
 
 
 {-| Model
 -}
-update : Msg -> Model -> Model
-update msg _ =
-    case msg of
-        Input inputText ->
-            inputText
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case ( msg, model ) of
+        ( StartEditing, Fixed (Just actor) ) ->
+            ( Editing actor, Task.attempt Focus (Dom.focus "input-actor1") )
+
+        ( EditName inputText, Editing (Actor record) ) ->
+            ( Editing <| Actor { record | name = inputText }, Cmd.none )
+
+        ( FinishEditingName, Editing actor ) ->
+            if String.isEmpty <| actorName actor then
+                ( Fixed Nothing, Cmd.none )
+
+            else
+                ( Fixed <| Just actor, Cmd.none )
+
+        ( OpenActionSelector, Fixed (Just actor) ) ->
+            ( SelectingAction actor, Cmd.none )
+
+        ( CancelActionSelector, Fixed (Just actor) ) ->
+            ( Fixed <| Just actor, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )
 
 
-init : Model
-init =
-    "hel"
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Editing <| Actor { id = "actor1", name = "" }
+    , Task.attempt Focus (Dom.focus "input-actor1")
+    )
 
 
-type alias Model =
-    String
+type Model
+    = Editing Actor
+    | Fixed (Maybe Actor)
+    | SelectingAction Actor
+
+
+type Actor
+    = Actor
+        { id : String
+        , name : String
+        }
+
+
+actorName : Actor -> String
+actorName (Actor record) =
+    record.name
+
+
+actorId : Actor -> String
+actorId (Actor record) =
+    record.id
