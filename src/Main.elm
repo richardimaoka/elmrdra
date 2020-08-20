@@ -25,21 +25,28 @@ main =
 view : Model -> Html Msg
 view model =
     div []
-        [ -- single requirement set
-          div []
-            [ div []
-                [ viewActorSvg
-                , viewActorName model.actor
-                ]
-            , div [] <|
-                List.append
-                    (viewRequirementList model.requirements model.selected)
-                    [ buttonAddRequirement ]
-            ]
+        (Array.toIndexedList
+            model.actorRequirements
+            |> List.map
+                (\( actorIndex, actorRequirement ) ->
+                    div []
+                        [ -- single requirement set
+                          div []
+                            [ div []
+                                [ viewActorSvg
+                                , viewActorName actorRequirement.actor
+                                ]
+                            , div [] <|
+                                List.append
+                                    (viewRequirementList 0 actorRequirement.requirements model.selected)
+                                    [ buttonAddRequirement actorIndex ]
+                            ]
 
-        -- button to add actor and requirement
-        , buttonAddActorRequirement
-        ]
+                        -- button to add actor and requirement
+                        , buttonAddActorRequirement
+                        ]
+                )
+        )
 
 
 buttonAddActorRequirement : Html Msg
@@ -68,54 +75,54 @@ viewActorNameInput actor =
         []
 
 
-viewRequirementList : Array Requirement -> Selection -> List (Html Msg)
-viewRequirementList array selection =
+viewRequirementList : Int -> Array Requirement -> Selection -> List (Html Msg)
+viewRequirementList actorIndex array selection =
     Array.toIndexedList array
         |> List.map
-            (\( index, requirement ) ->
+            (\( requirementIndex, requirement ) ->
                 case selection of
                     NotSelected ->
-                        viewRequirement ( index, requirement )
+                        viewRequirement actorIndex requirementIndex requirement
 
-                    Input selectIndex ->
-                        if selectIndex == index then
-                            viewRequirementInput ( index, requirement )
-
-                        else
-                            viewRequirement ( index, requirement )
-
-                    DropDownActions selectIndex ->
-                        if selectIndex == index then
-                            viewRequirementDropdown ( index, requirement )
+                    Input selectActorIndex selectRequirementIndex ->
+                        if actorIndex == selectActorIndex && requirementIndex == selectRequirementIndex then
+                            viewRequirementInput actorIndex requirementIndex requirement
 
                         else
-                            viewRequirement ( index, requirement )
+                            viewRequirement actorIndex requirementIndex requirement
+
+                    DropDownActions selectActorIndex selectRequirementIndex ->
+                        if actorIndex == selectActorIndex && requirementIndex == selectRequirementIndex then
+                            viewRequirementDropdown actorIndex requirementIndex requirement
+
+                        else
+                            viewRequirement actorIndex requirementIndex requirement
             )
 
 
-viewRequirement : ( Int, Requirement ) -> Html Msg
-viewRequirement ( index, requirement ) =
+viewRequirement : Int -> Int -> Requirement -> Html Msg
+viewRequirement actorIndex requirementIndex requirement =
     div []
-        [ div [ onClick <| ShowSelection index ] [ text requirement.text ] ]
+        [ div [ onClick <| ShowSelection actorIndex requirementIndex ] [ text requirement.text ] ]
 
 
-viewRequirementInput : ( Int, Requirement ) -> Html Msg
-viewRequirementInput ( index, requirement ) =
+viewRequirementInput : Int -> Int -> Requirement -> Html Msg
+viewRequirementInput actorIndex requirementIndex requirement =
     div []
         [ input
-            [ id <| inputHtmlTagId index
+            [ id <| inputHtmlTagId actorIndex requirementIndex
             , value requirement.text
             , onBlur GoStatic
             , onEnter GoStatic
-            , onInput <| UpdateText ( index, requirement )
+            , onInput <| UpdateText actorIndex requirementIndex requirement
             ]
             []
         ]
 
 
-inputHtmlTagId : Int -> String
-inputHtmlTagId index =
-    "input-requirement-" ++ String.fromInt index
+inputHtmlTagId : Int -> Int -> String
+inputHtmlTagId actorIndex requirementIndex =
+    "input-requirement-actor-" ++ String.fromInt actorIndex ++ "-requirement-" ++ String.fromInt requirementIndex
 
 
 onEnter : Msg -> Attribute Msg
@@ -135,28 +142,28 @@ onEnter msg =
     preventDefaultOn "keydown" (Decode.map alwaysPreventDefault (Decode.andThen isEnter keyCode))
 
 
-viewRequirementDropdown : ( Int, Requirement ) -> Html Msg
-viewRequirementDropdown ( index, requirement ) =
+viewRequirementDropdown : Int -> Int -> Requirement -> Html Msg
+viewRequirementDropdown actorIndex requirementIndex requirement =
     div []
         [ div [] [ text requirement.text ]
-        , div [ onClick <| OpenInput index ] [ text "rename" ]
-        , div [ onClick <| Delete index ] [ text "delete" ]
+        , div [ onClick <| OpenInput actorIndex requirementIndex ] [ text "rename" ]
+        , div [ onClick <| Delete actorIndex requirementIndex ] [ text "delete" ]
         ]
 
 
-buttonAddRequirement : Html Msg
-buttonAddRequirement =
-    button [ onClick AddRequirement ] [ text "add" ]
+buttonAddRequirement : Int -> Html Msg
+buttonAddRequirement actorIndex =
+    button [ onClick <| AddRequirement actorIndex ] [ text "add" ]
 
 
 {-| Msg
 -}
 type Msg
-    = AddRequirement
-    | UpdateText ( Int, Requirement ) String
-    | ShowSelection Int
-    | OpenInput Int
-    | Delete Int
+    = AddRequirement Int
+    | UpdateText Int Int Requirement String
+    | ShowSelection Int Int
+    | OpenInput Int Int
+    | Delete Int Int
     | GoStatic
     | Focus (Result Dom.Error ())
 
@@ -166,49 +173,76 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        AddRequirement ->
-            let
-                indexNewRequirement =
-                    Array.length model.requirements
-            in
-            ( { model
-                | requirements = Array.push { id = "a", text = "" } model.requirements
-                , selected = Input indexNewRequirement
-              }
-            , Task.attempt Focus (Dom.focus <| inputHtmlTagId indexNewRequirement)
-            )
+        AddRequirement actorIndex ->
+            case Array.get actorIndex model.actorRequirements of
+                Nothing ->
+                    ( model, Cmd.none )
 
-        UpdateText ( index, requirement ) newText ->
-            ( { model
-                | requirements = Array.set index { requirement | text = newText } model.requirements
-              }
+                Just acotRequirement ->
+                    let
+                        indexNewRequirement =
+                            Array.length acotRequirement.requirements
+                    in
+                    ( { model
+                        | actorRequirements =
+                            Array.set
+                                actorIndex
+                                { acotRequirement | requirements = Array.push { id = "a", text = "" } acotRequirement.requirements }
+                                model.actorRequirements
+                        , selected = Input actorIndex indexNewRequirement
+                      }
+                    , Task.attempt Focus (Dom.focus <| inputHtmlTagId actorIndex indexNewRequirement)
+                    )
+
+        UpdateText actorIndex requirementIndex requirement newText ->
+            case Array.get actorIndex model.actorRequirements of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just acotRequirement ->
+                    ( { model
+                        | actorRequirements =
+                            Array.set
+                                actorIndex
+                                { acotRequirement | requirements = Array.set requirementIndex { requirement | text = newText } acotRequirement.requirements }
+                                model.actorRequirements
+                      }
+                    , Cmd.none
+                    )
+
+        ShowSelection actorIndex requirementIndex ->
+            ( { model | selected = DropDownActions actorIndex requirementIndex }
             , Cmd.none
             )
 
-        ShowSelection index ->
-            ( { model | selected = DropDownActions index }
-            , Cmd.none
+        OpenInput actorIndex requirementIndex ->
+            ( { model | selected = Input actorIndex requirementIndex }
+            , Task.attempt Focus (Dom.focus <| inputHtmlTagId actorIndex requirementIndex)
             )
 
-        OpenInput index ->
-            ( { model | selected = Input index }
-            , Task.attempt Focus (Dom.focus <| inputHtmlTagId index)
-            )
+        Delete actorIndex requirementIndex ->
+            case Array.get actorIndex model.actorRequirements of
+                Nothing ->
+                    ( model, Cmd.none )
 
-        Delete index ->
-            let
-                arr1 =
-                    Array.slice 0 index model.requirements
+                Just acotRequirement ->
+                    let
+                        arr1 =
+                            Array.slice 0 requirementIndex acotRequirement.requirements
 
-                arr2 =
-                    Array.slice (index + 1) (Array.length model.requirements) model.requirements
-            in
-            ( { model
-                | requirements = Array.append arr1 arr2
-                , selected = NotSelected
-              }
-            , Cmd.none
-            )
+                        arr2 =
+                            Array.slice (requirementIndex + 1) (Array.length acotRequirement.requirements) acotRequirement.requirements
+                    in
+                    ( { model
+                        | actorRequirements =
+                            Array.set
+                                actorIndex
+                                { acotRequirement | requirements = Array.append arr1 arr2 }
+                                model.actorRequirements
+                        , selected = NotSelected
+                      }
+                    , Cmd.none
+                    )
 
         GoStatic ->
             ( { model | selected = NotSelected }, Cmd.none )
@@ -219,8 +253,7 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { actor = Actor { id = "", name = "actrrr" }
-      , requirements = Array.fromList []
+    ( { actorRequirements = Array.fromList [ { actor = Actor { id = "", name = "actrrr" }, requirements = Array.fromList [] } ]
       , selected = NotSelected
       }
     , Cmd.none
@@ -228,9 +261,20 @@ init _ =
 
 
 type alias Model =
+    { actorRequirements : Array ActorRequirement
+    , selected : Selection
+    }
+
+
+type Selection
+    = NotSelected
+    | Input Int Int
+    | DropDownActions Int Int
+
+
+type alias ActorRequirement =
     { actor : Actor
     , requirements : Array Requirement
-    , selected : Selection
     }
 
 
@@ -238,12 +282,6 @@ type alias Requirement =
     { id : String
     , text : String
     }
-
-
-type Selection
-    = NotSelected
-    | Input Int
-    | DropDownActions Int
 
 
 type Actor
