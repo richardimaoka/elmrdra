@@ -10750,7 +10750,7 @@ var $author$project$Main$update = F2(
 							$elm$browser$Browser$Dom$focus(
 								A2($author$project$Main$inputHtmlTagId, actorIndex, indexNewRequirement))));
 				}
-			case 'UpdateText':
+			case 'UpdateRequirementText':
 				var actorIndex = msg.a;
 				var requirementIndex = msg.b;
 				var requirement = msg.c;
@@ -10782,7 +10782,7 @@ var $author$project$Main$update = F2(
 							}),
 						$elm$core$Platform$Cmd$none);
 				}
-			case 'ShowSelection':
+			case 'ShowRequirementSelection':
 				var actorIndex = msg.a;
 				var requirementIndex = msg.b;
 				return _Utils_Tuple2(
@@ -10792,7 +10792,7 @@ var $author$project$Main$update = F2(
 							selected: A2($author$project$Main$DropDownActions, actorIndex, requirementIndex)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'OpenInput':
+			case 'OpenRequirementInput':
 				var actorIndex = msg.a;
 				var requirementIndex = msg.b;
 				return _Utils_Tuple2(
@@ -10806,7 +10806,7 @@ var $author$project$Main$update = F2(
 						$author$project$Main$Focus,
 						$elm$browser$Browser$Dom$focus(
 							A2($author$project$Main$inputHtmlTagId, actorIndex, requirementIndex))));
-			case 'Delete':
+			case 'DeleteRequirement':
 				var actorIndex = msg.a;
 				var requirementIndex = msg.b;
 				var _v3 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
@@ -10932,9 +10932,9 @@ var $author$project$Main$viewActorSvg = A2(
 				]),
 			_List_Nil)
 		]));
-var $author$project$Main$ShowSelection = F2(
+var $author$project$Main$ShowRequirementSelection = F2(
 	function (a, b) {
-		return {$: 'ShowSelection', a: a, b: b};
+		return {$: 'ShowRequirementSelection', a: a, b: b};
 	});
 var $author$project$Main$viewRequirement = F3(
 	function (actorIndex, requirementIndex, requirement) {
@@ -10948,7 +10948,7 @@ var $author$project$Main$viewRequirement = F3(
 					_List_fromArray(
 						[
 							$elm$html$Html$Events$onClick(
-							A2($author$project$Main$ShowSelection, actorIndex, requirementIndex))
+							A2($author$project$Main$ShowRequirementSelection, actorIndex, requirementIndex))
 						]),
 					_List_fromArray(
 						[
@@ -10956,13 +10956,13 @@ var $author$project$Main$viewRequirement = F3(
 						]))
 				]));
 	});
-var $author$project$Main$Delete = F2(
+var $author$project$Main$DeleteRequirement = F2(
 	function (a, b) {
-		return {$: 'Delete', a: a, b: b};
+		return {$: 'DeleteRequirement', a: a, b: b};
 	});
-var $author$project$Main$OpenInput = F2(
+var $author$project$Main$OpenRequirementInput = F2(
 	function (a, b) {
-		return {$: 'OpenInput', a: a, b: b};
+		return {$: 'OpenRequirementInput', a: a, b: b};
 	});
 var $author$project$Main$viewRequirementDropdown = F3(
 	function (actorIndex, requirementIndex, requirement) {
@@ -10983,7 +10983,7 @@ var $author$project$Main$viewRequirementDropdown = F3(
 					_List_fromArray(
 						[
 							$elm$html$Html$Events$onClick(
-							A2($author$project$Main$OpenInput, actorIndex, requirementIndex))
+							A2($author$project$Main$OpenRequirementInput, actorIndex, requirementIndex))
 						]),
 					_List_fromArray(
 						[
@@ -10994,18 +10994,18 @@ var $author$project$Main$viewRequirementDropdown = F3(
 					_List_fromArray(
 						[
 							$elm$html$Html$Events$onClick(
-							A2($author$project$Main$Delete, actorIndex, requirementIndex))
+							A2($author$project$Main$DeleteRequirement, actorIndex, requirementIndex))
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('delete')
+							$elm$html$Html$text('DeleteRequirement')
 						]))
 				]));
 	});
 var $author$project$Main$GoStatic = {$: 'GoStatic'};
-var $author$project$Main$UpdateText = F4(
+var $author$project$Main$UpdateRequirementText = F4(
 	function (a, b, c, d) {
-		return {$: 'UpdateText', a: a, b: b, c: c, d: d};
+		return {$: 'UpdateRequirementText', a: a, b: b, c: c, d: d};
 	});
 var $elm$html$Html$Events$onBlur = function (msg) {
 	return A2(
@@ -11058,7 +11058,7 @@ var $author$project$Main$viewRequirementInput = F3(
 							$elm$html$Html$Events$onBlur($author$project$Main$GoStatic),
 							$author$project$Main$onEnter($author$project$Main$GoStatic),
 							$elm$html$Html$Events$onInput(
-							A3($author$project$Main$UpdateText, actorIndex, requirementIndex, requirement))
+							A3($author$project$Main$UpdateRequirementText, actorIndex, requirementIndex, requirement))
 						]),
 					_List_Nil)
 				]));
@@ -11138,4 +11138,4 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Requirement":{"args":[],"type":"{ id : String.String, text : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"AddRequirement":["Basics.Int"],"UpdateText":["Basics.Int","Basics.Int","Main.Requirement","String.String"],"ShowSelection":["Basics.Int","Basics.Int"],"OpenInput":["Basics.Int","Basics.Int"],"Delete":["Basics.Int","Basics.Int"],"GoStatic":[],"Focus":["Result.Result Browser.Dom.Error ()"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Requirement":{"args":[],"type":"{ id : String.String, text : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"AddRequirement":["Basics.Int"],"UpdateRequirementText":["Basics.Int","Basics.Int","Main.Requirement","String.String"],"ShowRequirementSelection":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"DeleteRequirement":["Basics.Int","Basics.Int"],"GoStatic":[],"Focus":["Result.Result Browser.Dom.Error ()"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));

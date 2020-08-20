@@ -103,7 +103,7 @@ viewRequirementList actorIndex array selection =
 viewRequirement : Int -> Int -> Requirement -> Html Msg
 viewRequirement actorIndex requirementIndex requirement =
     div []
-        [ div [ onClick <| ShowSelection actorIndex requirementIndex ] [ text requirement.text ] ]
+        [ div [ onClick <| ShowRequirementSelection actorIndex requirementIndex ] [ text requirement.text ] ]
 
 
 viewRequirementInput : Int -> Int -> Requirement -> Html Msg
@@ -114,7 +114,7 @@ viewRequirementInput actorIndex requirementIndex requirement =
             , value requirement.text
             , onBlur GoStatic
             , onEnter GoStatic
-            , onInput <| UpdateText actorIndex requirementIndex requirement
+            , onInput <| UpdateRequirementText actorIndex requirementIndex requirement
             ]
             []
         ]
@@ -146,8 +146,8 @@ viewRequirementDropdown : Int -> Int -> Requirement -> Html Msg
 viewRequirementDropdown actorIndex requirementIndex requirement =
     div []
         [ div [] [ text requirement.text ]
-        , div [ onClick <| OpenInput actorIndex requirementIndex ] [ text "rename" ]
-        , div [ onClick <| Delete actorIndex requirementIndex ] [ text "delete" ]
+        , div [ onClick <| OpenRequirementInput actorIndex requirementIndex ] [ text "rename" ]
+        , div [ onClick <| DeleteRequirement actorIndex requirementIndex ] [ text "DeleteRequirement" ]
         ]
 
 
@@ -160,10 +160,10 @@ buttonAddRequirement actorIndex =
 -}
 type Msg
     = AddRequirement Int
-    | UpdateText Int Int Requirement String
-    | ShowSelection Int Int
-    | OpenInput Int Int
-    | Delete Int Int
+    | UpdateRequirementText Int Int Requirement String
+    | ShowRequirementSelection Int Int
+    | OpenRequirementInput Int Int
+    | DeleteRequirement Int Int
     | GoStatic
     | Focus (Result Dom.Error ())
 
@@ -194,7 +194,7 @@ update msg model =
                     , Task.attempt Focus (Dom.focus <| inputHtmlTagId actorIndex indexNewRequirement)
                     )
 
-        UpdateText actorIndex requirementIndex requirement newText ->
+        UpdateRequirementText actorIndex requirementIndex requirement newText ->
             case Array.get actorIndex model.actorRequirements of
                 Nothing ->
                     ( model, Cmd.none )
@@ -210,17 +210,17 @@ update msg model =
                     , Cmd.none
                     )
 
-        ShowSelection actorIndex requirementIndex ->
+        ShowRequirementSelection actorIndex requirementIndex ->
             ( { model | selected = DropDownActions actorIndex requirementIndex }
             , Cmd.none
             )
 
-        OpenInput actorIndex requirementIndex ->
+        OpenRequirementInput actorIndex requirementIndex ->
             ( { model | selected = Input actorIndex requirementIndex }
             , Task.attempt Focus (Dom.focus <| inputHtmlTagId actorIndex requirementIndex)
             )
 
-        Delete actorIndex requirementIndex ->
+        DeleteRequirement actorIndex requirementIndex ->
             case Array.get actorIndex model.actorRequirements of
                 Nothing ->
                     ( model, Cmd.none )
