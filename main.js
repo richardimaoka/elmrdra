@@ -10552,8 +10552,8 @@ var $author$project$Main$init = function (_v0) {
 						requirements: $elm$core$Array$fromList(
 							_List_fromArray(
 								[
-									{id: '', text: 'some requirement'},
-									{id: '', text: 'some requirement'}
+									{id: '', text: 'a requirement'},
+									{id: '', text: 'another requirement'}
 								]))
 					},
 						{
@@ -10562,9 +10562,9 @@ var $author$project$Main$init = function (_v0) {
 						requirements: $elm$core$Array$fromList(
 							_List_fromArray(
 								[
-									{id: '', text: 'some requirement'},
-									{id: '', text: 'some requirement'},
-									{id: '', text: 'some requirement'}
+									{id: '', text: 'yet another requirement'},
+									{id: '', text: 'far more requirement'},
+									{id: '', text: 'didn\'t you think there is more?'}
 								]))
 					},
 						{
@@ -10588,6 +10588,10 @@ var $author$project$Main$ActorInput = function (a) {
 var $author$project$Main$Focus = function (a) {
 	return {$: 'Focus', a: a};
 };
+var $author$project$Main$RequirementDragged = F2(
+	function (a, b) {
+		return {$: 'RequirementDragged', a: a, b: b};
+	});
 var $author$project$Main$RequirementDropDownActions = F2(
 	function (a, b) {
 		return {$: 'RequirementDropDownActions', a: a, b: b};
@@ -10745,11 +10749,49 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
+var $author$project$Main$DOWN = {$: 'DOWN'};
+var $author$project$Main$UP = {$: 'UP'};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$Main$rotate = F2(
+	function (array, direction) {
+		if (direction.$ === 'UP') {
+			var toMove = A3($elm$core$Array$slice, 0, 1, array);
+			var length = $elm$core$Array$length(array);
+			var others = A3($elm$core$Array$slice, 1, length, array);
+			return A2($elm$core$Array$append, others, toMove);
+		} else {
+			var length = $elm$core$Array$length(array);
+			var others = A3($elm$core$Array$slice, 0, length - 1, array);
+			var toMove = A3($elm$core$Array$slice, length - 1, length, array);
+			return A2($elm$core$Array$append, toMove, others);
+		}
+	});
+var $author$project$Main$sort = F3(
+	function (fromIndex, toIndex, array) {
+		var upperEnd = A2($elm$core$Basics$min, fromIndex, toIndex);
+		var upper = A3($elm$core$Array$slice, 0, upperEnd, array);
+		var lowerStart = A2($elm$core$Basics$max, fromIndex + 1, toIndex + 1);
+		var toRotate = A3($elm$core$Array$slice, upperEnd, lowerStart, array);
+		var middle = (_Utils_cmp(fromIndex, toIndex) < 0) ? A2($author$project$Main$rotate, toRotate, $author$project$Main$UP) : A2($author$project$Main$rotate, toRotate, $author$project$Main$DOWN);
+		var lower = A3(
+			$elm$core$Array$slice,
+			lowerStart,
+			$elm$core$Array$length(array),
+			array);
+		return A2(
+			$elm$core$Array$append,
+			upper,
+			A2($elm$core$Array$append, middle, lower));
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		switch (msg.$) {
+		var _v0 = _Utils_Tuple2(msg, model.selected);
+		switch (_v0.a.$) {
 			case 'AddRequirement':
-				var actorIndex = msg.a;
+				var actorIndex = _v0.a.a;
 				var _v1 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
 				if (_v1.$ === 'Nothing') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -10781,15 +10823,16 @@ var $author$project$Main$update = F2(
 								A2($author$project$Main$requirementInputTagId, actorIndex, indexNewRequirement))));
 				}
 			case 'UpdateRequirementText':
-				var actorIndex = msg.a;
-				var requirementIndex = msg.b;
-				var requirement = msg.c;
-				var newText = msg.d;
-				var _v2 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
-				if (_v2.$ === 'Nothing') {
+				var _v2 = _v0.a;
+				var actorIndex = _v2.a;
+				var requirementIndex = _v2.b;
+				var requirement = _v2.c;
+				var newText = _v2.d;
+				var _v3 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
+				if (_v3.$ === 'Nothing') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
-					var actorRequirement = _v2.a;
+					var actorRequirement = _v3.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -10813,8 +10856,9 @@ var $author$project$Main$update = F2(
 						$elm$core$Platform$Cmd$none);
 				}
 			case 'ShowRequirementSelection':
-				var actorIndex = msg.a;
-				var requirementIndex = msg.b;
+				var _v4 = _v0.a;
+				var actorIndex = _v4.a;
+				var requirementIndex = _v4.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -10823,8 +10867,9 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'OpenRequirementInput':
-				var actorIndex = msg.a;
-				var requirementIndex = msg.b;
+				var _v5 = _v0.a;
+				var actorIndex = _v5.a;
+				var requirementIndex = _v5.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -10836,15 +10881,98 @@ var $author$project$Main$update = F2(
 						$author$project$Main$Focus,
 						$elm$browser$Browser$Dom$focus(
 							A2($author$project$Main$requirementInputTagId, actorIndex, requirementIndex))));
+			case 'DragStart':
+				var _v6 = _v0.a;
+				var actorIndex = _v6.a;
+				var requirementIndex = _v6.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							selected: A2($author$project$Main$RequirementDragged, actorIndex, requirementIndex)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'DragEnter':
+				if (_v0.b.$ === 'RequirementDragged') {
+					var _v7 = _v0.a;
+					var toActorIndex = _v7.a;
+					var toRequirementIndex = _v7.b;
+					var _v8 = _v0.b;
+					var fromActorIndex = _v8.a;
+					var fromRequirementIndex = _v8.b;
+					var _v9 = A2($elm$core$Array$get, toActorIndex, model.actorRequirements);
+					if (_v9.$ === 'Nothing') {
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									actorRequirements: model.actorRequirements,
+									selected: A2($author$project$Main$RequirementDragged, toActorIndex, toRequirementIndex)
+								}),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						var actorRequirement = _v9.a;
+						var sortedRequirements = A3($author$project$Main$sort, fromRequirementIndex, toRequirementIndex, actorRequirement.requirements);
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									actorRequirements: A3(
+										$elm$core$Array$set,
+										toActorIndex,
+										_Utils_update(
+											actorRequirement,
+											{requirements: sortedRequirements}),
+										model.actorRequirements),
+									selected: A2($author$project$Main$RequirementDragged, toActorIndex, toRequirementIndex)
+								}),
+							$elm$core$Platform$Cmd$none);
+					}
+				} else {
+					var _v10 = _v0.a;
+					var actorIndex = _v10.a;
+					var requirementIndex = _v10.b;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								actorRequirements: model.actorRequirements,
+								selected: A2($author$project$Main$RequirementDragged, actorIndex, requirementIndex)
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'AddActor':
+				var _v11 = _v0.a;
+				var indexNewActor = $elm$core$Array$length(model.actorRequirements);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							actorRequirements: A2(
+								$elm$core$Array$push,
+								{
+									actor: $author$project$Main$Actor(
+										{id: 'a', name: ''}),
+									requirements: $elm$core$Array$empty
+								},
+								model.actorRequirements),
+							selected: $author$project$Main$ActorInput(indexNewActor)
+						}),
+					A2(
+						$elm$core$Task$attempt,
+						$author$project$Main$Focus,
+						$elm$browser$Browser$Dom$focus(
+							$author$project$Main$actorInputTagId(indexNewActor))));
 			case 'UpdateActorName':
-				var actorIndex = msg.a;
-				var actor = msg.b.a;
-				var newName = msg.c;
-				var _v3 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
-				if (_v3.$ === 'Nothing') {
+				var _v12 = _v0.a;
+				var actorIndex = _v12.a;
+				var actor = _v12.b.a;
+				var newName = _v12.c;
+				var _v13 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
+				if (_v13.$ === 'Nothing') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
-					var actorRequirement = _v3.a;
+					var actorRequirement = _v13.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -10865,7 +10993,7 @@ var $author$project$Main$update = F2(
 						$elm$core$Platform$Cmd$none);
 				}
 			case 'ShowActorSelection':
-				var actorIndex = msg.a;
+				var actorIndex = _v0.a.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -10874,7 +11002,7 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'OpenActorInput':
-				var actorIndex = msg.a;
+				var actorIndex = _v0.a.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -10887,13 +11015,14 @@ var $author$project$Main$update = F2(
 						$elm$browser$Browser$Dom$focus(
 							$author$project$Main$actorInputTagId(actorIndex))));
 			case 'DeleteRequirement':
-				var actorIndex = msg.a;
-				var requirementIndex = msg.b;
-				var _v4 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
-				if (_v4.$ === 'Nothing') {
+				var _v14 = _v0.a;
+				var actorIndex = _v14.a;
+				var requirementIndex = _v14.b;
+				var _v15 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
+				if (_v15.$ === 'Nothing') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
-					var actorRequirement = _v4.a;
+					var actorRequirement = _v15.a;
 					var arr2 = A3(
 						$elm$core$Array$slice,
 						requirementIndex + 1,
@@ -10918,32 +11047,12 @@ var $author$project$Main$update = F2(
 						$elm$core$Platform$Cmd$none);
 				}
 			case 'GoStatic':
+				var _v16 = _v0.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{selected: $author$project$Main$NotSelected}),
 					$elm$core$Platform$Cmd$none);
-			case 'AddActor':
-				var indexNewActor = $elm$core$Array$length(model.actorRequirements);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							actorRequirements: A2(
-								$elm$core$Array$push,
-								{
-									actor: $author$project$Main$Actor(
-										{id: 'a', name: ''}),
-									requirements: $elm$core$Array$empty
-								},
-								model.actorRequirements),
-							selected: $author$project$Main$ActorInput(indexNewActor)
-						}),
-					A2(
-						$elm$core$Task$attempt,
-						$author$project$Main$Focus,
-						$elm$browser$Browser$Dom$focus(
-							$author$project$Main$actorInputTagId(indexNewActor))));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -11116,36 +11225,16 @@ var $author$project$Main$viewStaticActorName = F2(
 	});
 var $author$project$Main$viewActorName = F3(
 	function (actorIndex, actor, selection) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			function () {
-				switch (selection.$) {
-					case 'ActorInput':
-						var selectActorIndex = selection.a;
-						return _Utils_eq(actorIndex, selectActorIndex) ? _List_fromArray(
-							[
-								A2($author$project$Main$viewActorNameInput, actorIndex, actor)
-							]) : _List_fromArray(
-							[
-								A2($author$project$Main$viewStaticActorName, actorIndex, actor)
-							]);
-					case 'ActorDropDownActions':
-						var selectActorIndex = selection.a;
-						return _Utils_eq(actorIndex, selectActorIndex) ? _List_fromArray(
-							[
-								A2($author$project$Main$viewActorDropdown, actorIndex, actor)
-							]) : _List_fromArray(
-							[
-								A2($author$project$Main$viewStaticActorName, actorIndex, actor)
-							]);
-					default:
-						return _List_fromArray(
-							[
-								A2($author$project$Main$viewStaticActorName, actorIndex, actor)
-							]);
-				}
-			}());
+		switch (selection.$) {
+			case 'ActorInput':
+				var selectActorIndex = selection.a;
+				return _Utils_eq(actorIndex, selectActorIndex) ? A2($author$project$Main$viewActorNameInput, actorIndex, actor) : A2($author$project$Main$viewStaticActorName, actorIndex, actor);
+			case 'ActorDropDownActions':
+				var selectActorIndex = selection.a;
+				return _Utils_eq(actorIndex, selectActorIndex) ? A2($author$project$Main$viewActorDropdown, actorIndex, actor) : A2($author$project$Main$viewStaticActorName, actorIndex, actor);
+			default:
+				return A2($author$project$Main$viewStaticActorName, actorIndex, actor);
+		}
 	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
@@ -11176,31 +11265,56 @@ var $author$project$Main$viewActorSvg = A2(
 				]),
 			_List_Nil)
 		]));
+var $author$project$Main$DragEnter = F2(
+	function (a, b) {
+		return {$: 'DragEnter', a: a, b: b};
+	});
+var $author$project$Main$DragStart = F2(
+	function (a, b) {
+		return {$: 'DragStart', a: a, b: b};
+	});
 var $author$project$Main$ShowRequirementSelection = F2(
 	function (a, b) {
 		return {$: 'ShowRequirementSelection', a: a, b: b};
 	});
+var $elm$html$Html$Attributes$draggable = _VirtualDom_attribute('draggable');
+var $author$project$Main$onDragEnd = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'dragend',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Main$onDragEnter = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'dragenter',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Main$onDragStart = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'dragstart',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $author$project$Main$viewRequirement = F3(
 	function (actorIndex, requirementIndex, requirement) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('m-2')
+					$elm$html$Html$Attributes$class('m-2'),
+					$elm$html$Html$Attributes$draggable('true'),
+					$elm$html$Html$Events$onClick(
+					A2($author$project$Main$ShowRequirementSelection, actorIndex, requirementIndex)),
+					$author$project$Main$onDragStart(
+					A2($author$project$Main$DragStart, actorIndex, requirementIndex)),
+					$author$project$Main$onDragEnter(
+					A2($author$project$Main$DragEnter, actorIndex, requirementIndex)),
+					$author$project$Main$onDragEnd($author$project$Main$GoStatic)
 				]),
 			_List_fromArray(
 				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							A2($author$project$Main$ShowRequirementSelection, actorIndex, requirementIndex))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(requirement.text)
-						]))
+					$elm$html$Html$text(requirement.text)
 				]));
 	});
 var $author$project$Main$DeleteRequirement = F2(
@@ -11249,6 +11363,21 @@ var $author$project$Main$viewRequirementDropdown = F3(
 						]))
 				]));
 	});
+var $author$project$Main$viewRequirementFaded = F3(
+	function (actorIndex, requirementIndex, requirement) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('m-2'),
+					A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
+					$author$project$Main$onDragEnd($author$project$Main$GoStatic)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(requirement.text)
+				]));
+	});
 var $author$project$Main$UpdateRequirementText = F4(
 	function (a, b, c, d) {
 		return {$: 'UpdateRequirementText', a: a, b: b, c: c, d: d};
@@ -11293,6 +11422,10 @@ var $author$project$Main$viewRequirementList = F3(
 						var selectActorIndex = selection.a;
 						var selectRequirementIndex = selection.b;
 						return (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) ? A3($author$project$Main$viewRequirementDropdown, actorIndex, requirementIndex, requirement) : A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
+					case 'RequirementDragged':
+						var selectActorIndex = selection.a;
+						var selectRequirementIndex = selection.b;
+						return (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) ? A3($author$project$Main$viewRequirementFaded, actorIndex, requirementIndex, requirement) : A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
 					default:
 						return A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
 				}
@@ -11344,7 +11477,7 @@ var $author$project$Main$view = function (model) {
 										]),
 									A2(
 										$elm$core$List$append,
-										A3($author$project$Main$viewRequirementList, 0, actorRequirement.requirements, model.selected),
+										A3($author$project$Main$viewRequirementList, actorIndex, actorRequirement.requirements, model.selected),
 										_List_fromArray(
 											[
 												$author$project$Main$buttonAddRequirement(actorIndex)
@@ -11365,4 +11498,4 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Requirement":{"args":[],"type":"{ id : String.String, text : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"AddRequirement":["Basics.Int"],"UpdateRequirementText":["Basics.Int","Basics.Int","Main.Requirement","String.String"],"ShowRequirementSelection":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"DeleteRequirement":["Basics.Int","Basics.Int"],"AddActor":[],"UpdateActorName":["Basics.Int","Main.Actor","String.String"],"ShowActorSelection":["Basics.Int"],"OpenActorInput":["Basics.Int"],"GoStatic":[],"Focus":["Result.Result Browser.Dom.Error ()"]}},"Main.Actor":{"args":[],"tags":{"Actor":["{ id : String.String, name : String.String }"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Requirement":{"args":[],"type":"{ id : String.String, text : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"AddRequirement":["Basics.Int"],"UpdateRequirementText":["Basics.Int","Basics.Int","Main.Requirement","String.String"],"ShowRequirementSelection":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"DeleteRequirement":["Basics.Int","Basics.Int"],"DragStart":["Basics.Int","Basics.Int"],"DragEnter":["Basics.Int","Basics.Int"],"AddActor":[],"UpdateActorName":["Basics.Int","Main.Actor","String.String"],"ShowActorSelection":["Basics.Int"],"OpenActorInput":["Basics.Int"],"GoStatic":[],"Focus":["Result.Result Browser.Dom.Error ()"]}},"Main.Actor":{"args":[],"tags":{"Actor":["{ id : String.String, name : String.String }"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
