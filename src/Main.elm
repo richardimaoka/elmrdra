@@ -259,9 +259,28 @@ buttonAddRequirement actorIndex =
         [ text "add requirement" ]
 
 
-type Direction
-    = UP
-    | DOWN
+insert : Int -> a -> Array a -> Array a
+insert index element array =
+    let
+        upper =
+            Array.slice 0 index array
+
+        lower =
+            Array.slice index (Array.length array) array
+    in
+    Array.append (Array.push element upper) lower
+
+
+remove : Int -> Array a -> Array a
+remove index array =
+    let
+        upper =
+            Array.slice 0 index array
+
+        lower =
+            Array.slice (index + 1) (Array.length array) array
+    in
+    Array.append upper lower
 
 
 sort : Int -> Int -> Array a -> Array a
@@ -289,7 +308,13 @@ sort fromIndex toIndex array =
             else
                 rotate toRotate DOWN
     in
+    -- upper ++ middle ++ lower
     Array.append upper <| Array.append middle lower
+
+
+type Direction
+    = UP
+    | DOWN
 
 
 rotate : Array a -> Direction -> Array a
@@ -480,18 +505,11 @@ update msg model =
                     ( model, Cmd.none )
 
                 Just actorRequirement ->
-                    let
-                        arr1 =
-                            Array.slice 0 requirementIndex actorRequirement.requirements
-
-                        arr2 =
-                            Array.slice (requirementIndex + 1) (Array.length actorRequirement.requirements) actorRequirement.requirements
-                    in
                     ( { model
                         | actorRequirements =
                             Array.set
                                 actorIndex
-                                { actorRequirement | requirements = Array.append arr1 arr2 }
+                                { actorRequirement | requirements = remove requirementIndex actorRequirement.requirements }
                                 model.actorRequirements
                         , selected = NotSelected
                       }
@@ -532,6 +550,12 @@ type Selection
     | RequirementDragged Int Int
     | ActorInput Int
     | ActorDropDownActions Int
+
+
+
+-- type RequirementSelection  = | |
+-- type ActorSelectoin = | |
+-- type Selection = RequirementSelection | ActorSelection |
 
 
 type alias ActorRequirement =

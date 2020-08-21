@@ -10603,6 +10603,26 @@ var $author$project$Main$RequirementInput = F2(
 var $author$project$Main$actorInputTagId = function (actorIndex) {
 	return 'input-actor-' + $elm$core$String$fromInt(actorIndex);
 };
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
 var $elm$core$Array$appendHelpTree = F2(
 	function (toAppend, array) {
 		var len = array.a;
@@ -10683,26 +10703,16 @@ var $elm$core$Array$append = F2(
 						bTree)));
 		}
 	});
-var $elm$core$Task$onError = _Scheduler_onError;
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
+var $author$project$Main$remove = F2(
+	function (index, array) {
+		var upper = A3($elm$core$Array$slice, 0, index, array);
+		var lower = A3(
+			$elm$core$Array$slice,
+			index + 1,
+			$elm$core$Array$length(array),
+			array);
+		return A2($elm$core$Array$append, upper, lower);
 	});
-var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
 var $author$project$Main$requirementInputTagId = F2(
 	function (actorIndex, requirementIndex) {
 		return 'input-requirement-actor-' + ($elm$core$String$fromInt(actorIndex) + ('-requirement-' + $elm$core$String$fromInt(requirementIndex)));
@@ -11023,12 +11033,6 @@ var $author$project$Main$update = F2(
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
 					var actorRequirement = _v15.a;
-					var arr2 = A3(
-						$elm$core$Array$slice,
-						requirementIndex + 1,
-						$elm$core$Array$length(actorRequirement.requirements),
-						actorRequirement.requirements);
-					var arr1 = A3($elm$core$Array$slice, 0, requirementIndex, actorRequirement.requirements);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -11039,7 +11043,7 @@ var $author$project$Main$update = F2(
 									_Utils_update(
 										actorRequirement,
 										{
-											requirements: A2($elm$core$Array$append, arr1, arr2)
+											requirements: A2($author$project$Main$remove, requirementIndex, actorRequirement.requirements)
 										}),
 									model.actorRequirements),
 								selected: $author$project$Main$NotSelected
