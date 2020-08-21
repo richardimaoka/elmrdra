@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Array exposing (Array)
-import Browser
+import Browser exposing (element)
 import Browser.Dom as Dom
 import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (class, draggable, id, style, value)
@@ -285,66 +285,25 @@ remove index array =
 
 sort : Int -> Int -> Array a -> Array a
 sort fromIndex toIndex array =
-    let
-        upperEnd =
-            min fromIndex toIndex
+    case Array.get fromIndex array of
+        -- if fromIndex is out of range, return array without modification
+        Nothing ->
+            array
 
-        lowerStart =
-            max (fromIndex + 1) (toIndex + 1)
-
-        upper =
-            Array.slice 0 upperEnd array
-
-        lower =
-            Array.slice lowerStart (Array.length array) array
-
-        toRotate =
-            Array.slice upperEnd lowerStart array
-
-        middle =
-            if fromIndex < toIndex then
-                rotate toRotate UP
-
-            else
-                rotate toRotate DOWN
-    in
-    -- upper ++ middle ++ lower
-    Array.append upper <| Array.append middle lower
+        Just element ->
+            -- remove, then insert
+            insert toIndex element (remove fromIndex array)
 
 
-type Direction
-    = UP
-    | DOWN
+move : Int -> Array a -> Int -> Array a -> ( Array a, Array a )
+move fromIndex fromArray toIndex toArray =
+    case Array.get fromIndex fromArray of
+        -- if fromIndex is out of range, return array without modification
+        Nothing ->
+            ( fromArray, toArray )
 
-
-rotate : Array a -> Direction -> Array a
-rotate array direction =
-    case direction of
-        UP ->
-            let
-                length =
-                    Array.length array
-
-                toMove =
-                    Array.slice 0 1 array
-
-                others =
-                    Array.slice 1 length array
-            in
-            Array.append others toMove
-
-        DOWN ->
-            let
-                length =
-                    Array.length array
-
-                others =
-                    Array.slice 0 (length - 1) array
-
-                toMove =
-                    Array.slice (length - 1) length array
-            in
-            Array.append toMove others
+        Just element ->
+            ( remove fromIndex fromArray, insert toIndex element toArray )
 
 
 {-| Msg
@@ -437,15 +396,11 @@ update msg model =
                     )
 
                 Just actorRequirement ->
-                    let
-                        sortedRequirements =
-                            sort fromRequirementIndex toRequirementIndex actorRequirement.requirements
-                    in
                     ( { model
                         | actorRequirements =
                             Array.set
                                 toActorIndex
-                                { actorRequirement | requirements = sortedRequirements }
+                                { actorRequirement | requirements = sort fromRequirementIndex toRequirementIndex actorRequirement.requirements }
                                 model.actorRequirements
                         , selected = RequirementDragged toActorIndex toRequirementIndex
                       }

@@ -10759,42 +10759,32 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
-var $author$project$Main$DOWN = {$: 'DOWN'};
-var $author$project$Main$UP = {$: 'UP'};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $author$project$Main$rotate = F2(
-	function (array, direction) {
-		if (direction.$ === 'UP') {
-			var toMove = A3($elm$core$Array$slice, 0, 1, array);
-			var length = $elm$core$Array$length(array);
-			var others = A3($elm$core$Array$slice, 1, length, array);
-			return A2($elm$core$Array$append, others, toMove);
-		} else {
-			var length = $elm$core$Array$length(array);
-			var others = A3($elm$core$Array$slice, 0, length - 1, array);
-			var toMove = A3($elm$core$Array$slice, length - 1, length, array);
-			return A2($elm$core$Array$append, toMove, others);
-		}
-	});
-var $author$project$Main$sort = F3(
-	function (fromIndex, toIndex, array) {
-		var upperEnd = A2($elm$core$Basics$min, fromIndex, toIndex);
-		var upper = A3($elm$core$Array$slice, 0, upperEnd, array);
-		var lowerStart = A2($elm$core$Basics$max, fromIndex + 1, toIndex + 1);
-		var toRotate = A3($elm$core$Array$slice, upperEnd, lowerStart, array);
-		var middle = (_Utils_cmp(fromIndex, toIndex) < 0) ? A2($author$project$Main$rotate, toRotate, $author$project$Main$UP) : A2($author$project$Main$rotate, toRotate, $author$project$Main$DOWN);
+var $author$project$Main$insert = F3(
+	function (index, element, array) {
+		var upper = A3($elm$core$Array$slice, 0, index, array);
 		var lower = A3(
 			$elm$core$Array$slice,
-			lowerStart,
+			index,
 			$elm$core$Array$length(array),
 			array);
 		return A2(
 			$elm$core$Array$append,
-			upper,
-			A2($elm$core$Array$append, middle, lower));
+			A2($elm$core$Array$push, element, upper),
+			lower);
+	});
+var $author$project$Main$sort = F3(
+	function (fromIndex, toIndex, array) {
+		var _v0 = A2($elm$core$Array$get, fromIndex, array);
+		if (_v0.$ === 'Nothing') {
+			return array;
+		} else {
+			var element = _v0.a;
+			return A3(
+				$author$project$Main$insert,
+				toIndex,
+				element,
+				A2($author$project$Main$remove, fromIndex, array));
+		}
 	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -10922,7 +10912,6 @@ var $author$project$Main$update = F2(
 							$elm$core$Platform$Cmd$none);
 					} else {
 						var actorRequirement = _v9.a;
-						var sortedRequirements = A3($author$project$Main$sort, fromRequirementIndex, toRequirementIndex, actorRequirement.requirements);
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
@@ -10932,7 +10921,9 @@ var $author$project$Main$update = F2(
 										toActorIndex,
 										_Utils_update(
 											actorRequirement,
-											{requirements: sortedRequirements}),
+											{
+												requirements: A3($author$project$Main$sort, fromRequirementIndex, toRequirementIndex, actorRequirement.requirements)
+											}),
 										model.actorRequirements),
 									selected: A2($author$project$Main$RequirementDragged, toActorIndex, toRequirementIndex)
 								}),
