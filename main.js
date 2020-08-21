@@ -10549,6 +10549,27 @@ var $author$project$Main$init = function (_v0) {
 						{
 						actor: $author$project$Main$Actor(
 							{id: '', name: 'actrrr'}),
+						requirements: $elm$core$Array$fromList(
+							_List_fromArray(
+								[
+									{id: '', text: 'some requirement'},
+									{id: '', text: 'some requirement'}
+								]))
+					},
+						{
+						actor: $author$project$Main$Actor(
+							{id: '', name: 'actrrr'}),
+						requirements: $elm$core$Array$fromList(
+							_List_fromArray(
+								[
+									{id: '', text: 'some requirement'},
+									{id: '', text: 'some requirement'},
+									{id: '', text: 'some requirement'}
+								]))
+					},
+						{
+						actor: $author$project$Main$Actor(
+							{id: '', name: 'actrrr'}),
 						requirements: $elm$core$Array$fromList(_List_Nil)
 					}
 					])),
@@ -10932,6 +10953,8 @@ var $author$project$Main$buttonAddActorRequirement = A2(
 	$elm$html$Html$button,
 	_List_fromArray(
 		[
+			$elm$html$Html$Attributes$class('bg-gray-400'),
+			$elm$html$Html$Attributes$class('p-1'),
 			$elm$html$Html$Events$onClick($author$project$Main$AddActor)
 		]),
 	_List_fromArray(
@@ -10946,6 +10969,8 @@ var $author$project$Main$buttonAddRequirement = function (actorIndex) {
 		$elm$html$Html$button,
 		_List_fromArray(
 			[
+				$elm$html$Html$Attributes$class('bg-gray-400'),
+				$elm$html$Html$Attributes$class('p-1'),
 				$elm$html$Html$Events$onClick(
 				$author$project$Main$AddRequirement(actorIndex))
 			]),
@@ -11159,7 +11184,10 @@ var $author$project$Main$viewRequirement = F3(
 	function (actorIndex, requirementIndex, requirement) {
 		return A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('m-2')
+				]),
 			_List_fromArray(
 				[
 					A2(
@@ -11282,7 +11310,11 @@ var $author$project$Main$view = function (model) {
 				var actorRequirement = _v0.b;
 				return A2(
 					$elm$html$Html$div,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('m-4'),
+							$elm$html$Html$Attributes$class('p-4')
+						]),
 					_List_fromArray(
 						[
 							A2(
@@ -11292,7 +11324,11 @@ var $author$project$Main$view = function (model) {
 								[
 									A2(
 									$elm$html$Html$div,
-									_List_Nil,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'width', '200px'),
+											$elm$html$Html$Attributes$class('m-4')
+										]),
 									_List_fromArray(
 										[
 											$author$project$Main$viewActorSvg,
@@ -11300,7 +11336,12 @@ var $author$project$Main$view = function (model) {
 										])),
 									A2(
 									$elm$html$Html$div,
-									_List_Nil,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'width', '300px'),
+											$elm$html$Html$Attributes$class('m-4'),
+											$elm$html$Html$Attributes$class('p-2')
+										]),
 									A2(
 										$elm$core$List$append,
 										A3($author$project$Main$viewRequirementList, 0, actorRequirement.requirements, model.selected),

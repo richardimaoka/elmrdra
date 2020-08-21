@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Browser
 import Browser.Dom as Dom
 import Html exposing (Attribute, Html, button, div, input, text)
-import Html.Attributes exposing (id, value)
+import Html.Attributes exposing (class, id, style, value)
 import Html.Events exposing (keyCode, onBlur, onClick, onInput, preventDefaultOn)
 import Json.Decode as Decode
 import Svg exposing (circle, svg)
@@ -29,14 +29,25 @@ view model =
             model.actorRequirements
             |> List.map
                 (\( actorIndex, actorRequirement ) ->
-                    div []
+                    div
+                        [ class "m-4"
+                        , class "p-4"
+                        ]
                         [ -- single requirement set
                           div []
-                            [ div []
+                            [ div
+                                [ style "width" "200px"
+                                , class "m-4"
+                                ]
                                 [ viewActorSvg
                                 , viewActorName actorIndex actorRequirement.actor model.selected
                                 ]
-                            , div [] <|
+                            , div
+                                [ style "width" "300px"
+                                , class "m-4"
+                                , class "p-2"
+                                ]
+                              <|
                                 List.append
                                     (viewRequirementList 0 actorRequirement.requirements model.selected)
                                     [ buttonAddRequirement actorIndex ]
@@ -51,7 +62,12 @@ view model =
 
 buttonAddActorRequirement : Html Msg
 buttonAddActorRequirement =
-    button [ onClick <| AddActor ] [ text "add actor" ]
+    button
+        [ class "bg-gray-400"
+        , class "p-1"
+        , onClick <| AddActor
+        ]
+        [ text "add actor" ]
 
 
 viewActorSvg : Html Msg
@@ -145,7 +161,7 @@ viewRequirementList actorIndex array selection =
 
 viewRequirement : Int -> Int -> Requirement -> Html Msg
 viewRequirement actorIndex requirementIndex requirement =
-    div []
+    div [ class "m-2" ]
         [ div [ onClick <| ShowRequirementSelection actorIndex requirementIndex ] [ text requirement.text ] ]
 
 
@@ -196,7 +212,12 @@ viewRequirementDropdown actorIndex requirementIndex requirement =
 
 buttonAddRequirement : Int -> Html Msg
 buttonAddRequirement actorIndex =
-    button [ onClick <| AddRequirement actorIndex ] [ text "add requirement" ]
+    button
+        [ class "bg-gray-400"
+        , class "p-1"
+        , onClick <| AddRequirement actorIndex
+        ]
+        [ text "add requirement" ]
 
 
 {-| Msg
@@ -342,7 +363,12 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { actorRequirements = Array.fromList [ { actor = Actor { id = "", name = "actrrr" }, requirements = Array.fromList [] } ]
+    ( { actorRequirements =
+            Array.fromList
+                [ { actor = Actor { id = "", name = "actrrr" }, requirements = Array.fromList [ { id = "", text = "some requirement" }, { id = "", text = "some requirement" } ] }
+                , { actor = Actor { id = "", name = "actrrr" }, requirements = Array.fromList [ { id = "", text = "some requirement" }, { id = "", text = "some requirement" }, { id = "", text = "some requirement" } ] }
+                , { actor = Actor { id = "", name = "actrrr" }, requirements = Array.fromList [] }
+                ]
       , selected = NotSelected
       }
     , Cmd.none
