@@ -10558,17 +10558,26 @@ var $author$project$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Main$DropDownActions = F2(
-	function (a, b) {
-		return {$: 'DropDownActions', a: a, b: b};
-	});
+var $author$project$Main$ActorDropDownActions = function (a) {
+	return {$: 'ActorDropDownActions', a: a};
+};
+var $author$project$Main$ActorInput = function (a) {
+	return {$: 'ActorInput', a: a};
+};
 var $author$project$Main$Focus = function (a) {
 	return {$: 'Focus', a: a};
 };
-var $author$project$Main$Input = F2(
+var $author$project$Main$RequirementDropDownActions = F2(
 	function (a, b) {
-		return {$: 'Input', a: a, b: b};
+		return {$: 'RequirementDropDownActions', a: a, b: b};
 	});
+var $author$project$Main$RequirementInput = F2(
+	function (a, b) {
+		return {$: 'RequirementInput', a: a, b: b};
+	});
+var $author$project$Main$actorInputTagId = function (actorIndex) {
+	return 'input-actor-' + $elm$core$String$fromInt(actorIndex);
+};
 var $elm$core$Array$appendHelpTree = F2(
 	function (toAppend, array) {
 		var len = array.a;
@@ -10669,7 +10678,7 @@ var $elm$core$Task$attempt = F2(
 						task))));
 	});
 var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
-var $author$project$Main$inputHtmlTagId = F2(
+var $author$project$Main$requirementInputTagId = F2(
 	function (actorIndex, requirementIndex) {
 		return 'input-requirement-actor-' + ($elm$core$String$fromInt(actorIndex) + ('-requirement-' + $elm$core$String$fromInt(requirementIndex)));
 	});
@@ -10724,8 +10733,8 @@ var $author$project$Main$update = F2(
 				if (_v1.$ === 'Nothing') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
-					var acotRequirement = _v1.a;
-					var indexNewRequirement = $elm$core$Array$length(acotRequirement.requirements);
+					var actorRequirement = _v1.a;
+					var indexNewRequirement = $elm$core$Array$length(actorRequirement.requirements);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -10734,21 +10743,21 @@ var $author$project$Main$update = F2(
 									$elm$core$Array$set,
 									actorIndex,
 									_Utils_update(
-										acotRequirement,
+										actorRequirement,
 										{
 											requirements: A2(
 												$elm$core$Array$push,
 												{id: 'a', text: ''},
-												acotRequirement.requirements)
+												actorRequirement.requirements)
 										}),
 									model.actorRequirements),
-								selected: A2($author$project$Main$Input, actorIndex, indexNewRequirement)
+								selected: A2($author$project$Main$RequirementInput, actorIndex, indexNewRequirement)
 							}),
 						A2(
 							$elm$core$Task$attempt,
 							$author$project$Main$Focus,
 							$elm$browser$Browser$Dom$focus(
-								A2($author$project$Main$inputHtmlTagId, actorIndex, indexNewRequirement))));
+								A2($author$project$Main$requirementInputTagId, actorIndex, indexNewRequirement))));
 				}
 			case 'UpdateRequirementText':
 				var actorIndex = msg.a;
@@ -10759,7 +10768,7 @@ var $author$project$Main$update = F2(
 				if (_v2.$ === 'Nothing') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
-					var acotRequirement = _v2.a;
+					var actorRequirement = _v2.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -10768,7 +10777,7 @@ var $author$project$Main$update = F2(
 									$elm$core$Array$set,
 									actorIndex,
 									_Utils_update(
-										acotRequirement,
+										actorRequirement,
 										{
 											requirements: A3(
 												$elm$core$Array$set,
@@ -10776,7 +10785,7 @@ var $author$project$Main$update = F2(
 												_Utils_update(
 													requirement,
 													{text: newText}),
-												acotRequirement.requirements)
+												actorRequirement.requirements)
 										}),
 									model.actorRequirements)
 							}),
@@ -10789,7 +10798,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							selected: A2($author$project$Main$DropDownActions, actorIndex, requirementIndex)
+							selected: A2($author$project$Main$RequirementDropDownActions, actorIndex, requirementIndex)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'OpenRequirementInput':
@@ -10799,27 +10808,22 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							selected: A2($author$project$Main$Input, actorIndex, requirementIndex)
+							selected: A2($author$project$Main$RequirementInput, actorIndex, requirementIndex)
 						}),
 					A2(
 						$elm$core$Task$attempt,
 						$author$project$Main$Focus,
 						$elm$browser$Browser$Dom$focus(
-							A2($author$project$Main$inputHtmlTagId, actorIndex, requirementIndex))));
-			case 'DeleteRequirement':
+							A2($author$project$Main$requirementInputTagId, actorIndex, requirementIndex))));
+			case 'UpdateActorName':
 				var actorIndex = msg.a;
-				var requirementIndex = msg.b;
+				var actor = msg.b.a;
+				var newName = msg.c;
 				var _v3 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
 				if (_v3.$ === 'Nothing') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				} else {
-					var acotRequirement = _v3.a;
-					var arr2 = A3(
-						$elm$core$Array$slice,
-						requirementIndex + 1,
-						$elm$core$Array$length(acotRequirement.requirements),
-						acotRequirement.requirements);
-					var arr1 = A3($elm$core$Array$slice, 0, requirementIndex, acotRequirement.requirements);
+					var actorRequirement = _v3.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -10828,7 +10832,62 @@ var $author$project$Main$update = F2(
 									$elm$core$Array$set,
 									actorIndex,
 									_Utils_update(
-										acotRequirement,
+										actorRequirement,
+										{
+											actor: $author$project$Main$Actor(
+												_Utils_update(
+													actor,
+													{name: newName}))
+										}),
+									model.actorRequirements)
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'ShowActorSelection':
+				var actorIndex = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							selected: $author$project$Main$ActorDropDownActions(actorIndex)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'OpenActorInput':
+				var actorIndex = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							selected: $author$project$Main$ActorInput(actorIndex)
+						}),
+					A2(
+						$elm$core$Task$attempt,
+						$author$project$Main$Focus,
+						$elm$browser$Browser$Dom$focus(
+							$author$project$Main$actorInputTagId(actorIndex))));
+			case 'DeleteRequirement':
+				var actorIndex = msg.a;
+				var requirementIndex = msg.b;
+				var _v4 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
+				if (_v4.$ === 'Nothing') {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				} else {
+					var actorRequirement = _v4.a;
+					var arr2 = A3(
+						$elm$core$Array$slice,
+						requirementIndex + 1,
+						$elm$core$Array$length(actorRequirement.requirements),
+						actorRequirement.requirements);
+					var arr1 = A3($elm$core$Array$slice, 0, requirementIndex, actorRequirement.requirements);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								actorRequirements: A3(
+									$elm$core$Array$set,
+									actorIndex,
+									_Utils_update(
+										actorRequirement,
 										{
 											requirements: A2($elm$core$Array$append, arr1, arr2)
 										}),
@@ -10843,16 +10902,41 @@ var $author$project$Main$update = F2(
 						model,
 						{selected: $author$project$Main$NotSelected}),
 					$elm$core$Platform$Cmd$none);
+			case 'AddActor':
+				var indexNewActor = $elm$core$Array$length(model.actorRequirements);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							actorRequirements: A2(
+								$elm$core$Array$push,
+								{
+									actor: $author$project$Main$Actor(
+										{id: 'a', name: ''}),
+									requirements: $elm$core$Array$empty
+								},
+								model.actorRequirements),
+							selected: $author$project$Main$ActorInput(indexNewActor)
+						}),
+					A2(
+						$elm$core$Task$attempt,
+						$author$project$Main$Focus,
+						$elm$browser$Browser$Dom$focus(
+							$author$project$Main$actorInputTagId(indexNewActor))));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Main$AddActor = {$: 'AddActor'};
 var $author$project$Main$buttonAddActorRequirement = A2(
 	$elm$html$Html$button,
-	_List_Nil,
 	_List_fromArray(
 		[
-			$elm$html$Html$text('add')
+			$elm$html$Html$Events$onClick($author$project$Main$AddActor)
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('add actor')
 		]));
 var $author$project$Main$AddRequirement = function (a) {
 	return {$: 'AddRequirement', a: a};
@@ -10867,7 +10951,7 @@ var $author$project$Main$buttonAddRequirement = function (actorIndex) {
 			]),
 		_List_fromArray(
 			[
-				$elm$html$Html$text('add')
+				$elm$html$Html$text('add requirement')
 			]));
 };
 var $elm$core$Array$toIndexedList = function (array) {
@@ -10889,20 +10973,155 @@ var $elm$core$Array$toIndexedList = function (array) {
 		_Utils_Tuple2(len - 1, _List_Nil),
 		array).b;
 };
+var $author$project$Main$OpenActorInput = function (a) {
+	return {$: 'OpenActorInput', a: a};
+};
 var $author$project$Main$actorName = function (_v0) {
 	var record = _v0.a;
 	return record.name;
 };
-var $author$project$Main$viewActorName = function (actor) {
+var $author$project$Main$viewActorDropdown = F2(
+	function (actorIndex, actor) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$author$project$Main$actorName(actor))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							$author$project$Main$OpenActorInput(actorIndex))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('rename')
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('delete')
+						]))
+				]));
+	});
+var $author$project$Main$GoStatic = {$: 'GoStatic'};
+var $author$project$Main$UpdateActorName = F3(
+	function (a, b, c) {
+		return {$: 'UpdateActorName', a: a, b: b, c: c};
+	});
+var $elm$html$Html$Events$onBlur = function (msg) {
 	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				$author$project$Main$actorName(actor))
-			]));
+		$elm$html$Html$Events$on,
+		'blur',
+		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$html$Html$Events$keyCode = A2($elm$json$Json$Decode$field, 'keyCode', $elm$json$Json$Decode$int);
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $author$project$Main$onEnter = function (msg) {
+	var isEnter = function (code) {
+		return (code === 13) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$fail('not ENTER');
+	};
+	var alwaysPreventDefault = function (code) {
+		return _Utils_Tuple2(code, true);
+	};
+	return A2(
+		$elm$html$Html$Events$preventDefaultOn,
+		'keydown',
+		A2(
+			$elm$json$Json$Decode$map,
+			alwaysPreventDefault,
+			A2($elm$json$Json$Decode$andThen, isEnter, $elm$html$Html$Events$keyCode)));
+};
+var $author$project$Main$viewActorNameInput = F2(
+	function (actorIndex, actor) {
+		return A2(
+			$elm$html$Html$input,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$id(
+					$author$project$Main$actorInputTagId(actorIndex)),
+					$elm$html$Html$Attributes$value(
+					$author$project$Main$actorName(actor)),
+					$elm$html$Html$Events$onBlur($author$project$Main$GoStatic),
+					$author$project$Main$onEnter($author$project$Main$GoStatic),
+					$elm$html$Html$Events$onInput(
+					A2($author$project$Main$UpdateActorName, actorIndex, actor))
+				]),
+			_List_Nil);
+	});
+var $author$project$Main$ShowActorSelection = function (a) {
+	return {$: 'ShowActorSelection', a: a};
+};
+var $author$project$Main$viewStaticActorName = F2(
+	function (actorIndex, actor) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$ShowActorSelection(actorIndex))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$author$project$Main$actorName(actor))
+				]));
+	});
+var $author$project$Main$viewActorName = F3(
+	function (actorIndex, actor, selection) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			function () {
+				switch (selection.$) {
+					case 'ActorInput':
+						var selectActorIndex = selection.a;
+						return _Utils_eq(actorIndex, selectActorIndex) ? _List_fromArray(
+							[
+								A2($author$project$Main$viewActorNameInput, actorIndex, actor)
+							]) : _List_fromArray(
+							[
+								A2($author$project$Main$viewStaticActorName, actorIndex, actor)
+							]);
+					case 'ActorDropDownActions':
+						var selectActorIndex = selection.a;
+						return _Utils_eq(actorIndex, selectActorIndex) ? _List_fromArray(
+							[
+								A2($author$project$Main$viewActorDropdown, actorIndex, actor)
+							]) : _List_fromArray(
+							[
+								A2($author$project$Main$viewStaticActorName, actorIndex, actor)
+							]);
+					default:
+						return _List_fromArray(
+							[
+								A2($author$project$Main$viewStaticActorName, actorIndex, actor)
+							]);
+				}
+			}());
+	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
@@ -10998,49 +11217,14 @@ var $author$project$Main$viewRequirementDropdown = F3(
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('DeleteRequirement')
+							$elm$html$Html$text('delete')
 						]))
 				]));
 	});
-var $author$project$Main$GoStatic = {$: 'GoStatic'};
 var $author$project$Main$UpdateRequirementText = F4(
 	function (a, b, c, d) {
 		return {$: 'UpdateRequirementText', a: a, b: b, c: c, d: d};
 	});
-var $elm$html$Html$Events$onBlur = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'blur',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$html$Html$Events$keyCode = A2($elm$json$Json$Decode$field, 'keyCode', $elm$json$Json$Decode$int);
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $author$project$Main$onEnter = function (msg) {
-	var isEnter = function (code) {
-		return (code === 13) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$fail('not ENTER');
-	};
-	var alwaysPreventDefault = function (code) {
-		return _Utils_Tuple2(code, true);
-	};
-	return A2(
-		$elm$html$Html$Events$preventDefaultOn,
-		'keydown',
-		A2(
-			$elm$json$Json$Decode$map,
-			alwaysPreventDefault,
-			A2($elm$json$Json$Decode$andThen, isEnter, $elm$html$Html$Events$keyCode)));
-};
 var $author$project$Main$viewRequirementInput = F3(
 	function (actorIndex, requirementIndex, requirement) {
 		return A2(
@@ -11053,7 +11237,7 @@ var $author$project$Main$viewRequirementInput = F3(
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$id(
-							A2($author$project$Main$inputHtmlTagId, actorIndex, requirementIndex)),
+							A2($author$project$Main$requirementInputTagId, actorIndex, requirementIndex)),
 							$elm$html$Html$Attributes$value(requirement.text),
 							$elm$html$Html$Events$onBlur($author$project$Main$GoStatic),
 							$author$project$Main$onEnter($author$project$Main$GoStatic),
@@ -11073,14 +11257,16 @@ var $author$project$Main$viewRequirementList = F3(
 				switch (selection.$) {
 					case 'NotSelected':
 						return A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
-					case 'Input':
+					case 'RequirementInput':
 						var selectActorIndex = selection.a;
 						var selectRequirementIndex = selection.b;
 						return (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) ? A3($author$project$Main$viewRequirementInput, actorIndex, requirementIndex, requirement) : A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
-					default:
+					case 'RequirementDropDownActions':
 						var selectActorIndex = selection.a;
 						var selectRequirementIndex = selection.b;
 						return (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) ? A3($author$project$Main$viewRequirementDropdown, actorIndex, requirementIndex, requirement) : A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
+					default:
+						return A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
 				}
 			},
 			$elm$core$Array$toIndexedList(array));
@@ -11110,7 +11296,7 @@ var $author$project$Main$view = function (model) {
 									_List_fromArray(
 										[
 											$author$project$Main$viewActorSvg,
-											$author$project$Main$viewActorName(actorRequirement.actor)
+											A3($author$project$Main$viewActorName, actorIndex, actorRequirement.actor, model.selected)
 										])),
 									A2(
 									$elm$html$Html$div,
@@ -11138,4 +11324,4 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Requirement":{"args":[],"type":"{ id : String.String, text : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"AddRequirement":["Basics.Int"],"UpdateRequirementText":["Basics.Int","Basics.Int","Main.Requirement","String.String"],"ShowRequirementSelection":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"DeleteRequirement":["Basics.Int","Basics.Int"],"GoStatic":[],"Focus":["Result.Result Browser.Dom.Error ()"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Requirement":{"args":[],"type":"{ id : String.String, text : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"AddRequirement":["Basics.Int"],"UpdateRequirementText":["Basics.Int","Basics.Int","Main.Requirement","String.String"],"ShowRequirementSelection":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"DeleteRequirement":["Basics.Int","Basics.Int"],"AddActor":[],"UpdateActorName":["Basics.Int","Main.Actor","String.String"],"ShowActorSelection":["Basics.Int"],"OpenActorInput":["Basics.Int"],"GoStatic":[],"Focus":["Result.Result Browser.Dom.Error ()"]}},"Main.Actor":{"args":[],"tags":{"Actor":["{ id : String.String, name : String.String }"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
