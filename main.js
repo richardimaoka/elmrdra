@@ -10536,553 +10536,26 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$Actor = function (a) {
-	return {$: 'Actor', a: a};
-};
-var $author$project$Main$NotSelected = {$: 'NotSelected'};
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		{
-			actorRequirements: $elm$core$Array$fromList(
+			actors: $elm$core$Array$fromList(
 				_List_fromArray(
-					[
-						{
-						actor: $author$project$Main$Actor(
-							{id: '', name: 'actrrr'}),
-						requirements: $elm$core$Array$fromList(
-							_List_fromArray(
-								[
-									{id: '', text: 'a requirement'},
-									{id: '', text: 'another requirement'}
-								]))
-					},
-						{
-						actor: $author$project$Main$Actor(
-							{id: '', name: 'actrrr'}),
-						requirements: $elm$core$Array$fromList(
-							_List_fromArray(
-								[
-									{id: '', text: 'yet another requirement'},
-									{id: '', text: 'far more requirement'},
-									{id: '', text: 'didn\'t you think there is more?'}
-								]))
-					},
-						{
-						actor: $author$project$Main$Actor(
-							{id: '', name: 'actrrr'}),
-						requirements: $elm$core$Array$fromList(_List_Nil)
-					}
-					])),
-			selected: $author$project$Main$NotSelected
+					['hi', 'ya', 'all'])),
+			explanation: '',
+			externalSystems: $elm$core$Array$fromList(
+				_List_fromArray(
+					['hi-system', 'ya-system', 'all-system', 'splutta'])),
+			purpose: ''
 		},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Main$ActorDropDownActions = function (a) {
-	return {$: 'ActorDropDownActions', a: a};
-};
-var $author$project$Main$ActorInput = function (a) {
-	return {$: 'ActorInput', a: a};
-};
-var $author$project$Main$Focus = function (a) {
-	return {$: 'Focus', a: a};
-};
-var $author$project$Main$RequirementDragged = F2(
-	function (a, b) {
-		return {$: 'RequirementDragged', a: a, b: b};
-	});
-var $author$project$Main$RequirementDropDownActions = F2(
-	function (a, b) {
-		return {$: 'RequirementDropDownActions', a: a, b: b};
-	});
-var $author$project$Main$RequirementInput = F2(
-	function (a, b) {
-		return {$: 'RequirementInput', a: a, b: b};
-	});
-var $author$project$Main$actorInputTagId = function (actorIndex) {
-	return 'input-actor-' + $elm$core$String$fromInt(actorIndex);
-};
-var $elm$core$Task$onError = _Scheduler_onError;
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
-	});
-var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
-var $elm$core$Array$appendHelpTree = F2(
-	function (toAppend, array) {
-		var len = array.a;
-		var tree = array.c;
-		var tail = array.d;
-		var itemsToAppend = $elm$core$Elm$JsArray$length(toAppend);
-		var notAppended = ($elm$core$Array$branchFactor - $elm$core$Elm$JsArray$length(tail)) - itemsToAppend;
-		var appended = A3($elm$core$Elm$JsArray$appendN, $elm$core$Array$branchFactor, tail, toAppend);
-		var newArray = A2($elm$core$Array$unsafeReplaceTail, appended, array);
-		if (notAppended < 0) {
-			var nextTail = A3($elm$core$Elm$JsArray$slice, notAppended, itemsToAppend, toAppend);
-			return A2($elm$core$Array$unsafeReplaceTail, nextTail, newArray);
-		} else {
-			return newArray;
-		}
-	});
-var $elm$core$Array$builderFromArray = function (_v0) {
-	var len = _v0.a;
-	var tree = _v0.c;
-	var tail = _v0.d;
-	var helper = F2(
-		function (node, acc) {
-			if (node.$ === 'SubTree') {
-				var subTree = node.a;
-				return A3($elm$core$Elm$JsArray$foldl, helper, acc, subTree);
-			} else {
-				return A2($elm$core$List$cons, node, acc);
-			}
-		});
-	return {
-		nodeList: A3($elm$core$Elm$JsArray$foldl, helper, _List_Nil, tree),
-		nodeListSize: (len / $elm$core$Array$branchFactor) | 0,
-		tail: tail
-	};
-};
-var $elm$core$Array$append = F2(
-	function (a, _v0) {
-		var aTail = a.d;
-		var bLen = _v0.a;
-		var bTree = _v0.c;
-		var bTail = _v0.d;
-		if (_Utils_cmp(bLen, $elm$core$Array$branchFactor * 4) < 1) {
-			var foldHelper = F2(
-				function (node, array) {
-					if (node.$ === 'SubTree') {
-						var tree = node.a;
-						return A3($elm$core$Elm$JsArray$foldl, foldHelper, array, tree);
-					} else {
-						var leaf = node.a;
-						return A2($elm$core$Array$appendHelpTree, leaf, array);
-					}
-				});
-			return A2(
-				$elm$core$Array$appendHelpTree,
-				bTail,
-				A3($elm$core$Elm$JsArray$foldl, foldHelper, a, bTree));
-		} else {
-			var foldHelper = F2(
-				function (node, builder) {
-					if (node.$ === 'SubTree') {
-						var tree = node.a;
-						return A3($elm$core$Elm$JsArray$foldl, foldHelper, builder, tree);
-					} else {
-						var leaf = node.a;
-						return A2($elm$core$Array$appendHelpBuilder, leaf, builder);
-					}
-				});
-			return A2(
-				$elm$core$Array$builderToArray,
-				true,
-				A2(
-					$elm$core$Array$appendHelpBuilder,
-					bTail,
-					A3(
-						$elm$core$Elm$JsArray$foldl,
-						foldHelper,
-						$elm$core$Array$builderFromArray(a),
-						bTree)));
-		}
-	});
-var $author$project$Main$remove = F2(
-	function (index, array) {
-		var upper = A3($elm$core$Array$slice, 0, index, array);
-		var lower = A3(
-			$elm$core$Array$slice,
-			index + 1,
-			$elm$core$Array$length(array),
-			array);
-		return A2($elm$core$Array$append, upper, lower);
-	});
-var $author$project$Main$requirementInputTagId = F2(
-	function (actorIndex, requirementIndex) {
-		return 'input-requirement-actor-' + ($elm$core$String$fromInt(actorIndex) + ('-requirement-' + $elm$core$String$fromInt(requirementIndex)));
-	});
-var $elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = $elm$core$Array$bitMask & (index >>> shift);
-		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
-			var subTree = _v0.a;
-			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _v0.a;
-			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var $elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4($elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
-	});
-var $author$project$Main$insert = F3(
-	function (index, element, array) {
-		var upper = A3($elm$core$Array$slice, 0, index, array);
-		var lower = A3(
-			$elm$core$Array$slice,
-			index,
-			$elm$core$Array$length(array),
-			array);
-		return A2(
-			$elm$core$Array$append,
-			A2($elm$core$Array$push, element, upper),
-			lower);
-	});
-var $author$project$Main$sort = F3(
-	function (fromIndex, toIndex, array) {
-		var _v0 = A2($elm$core$Array$get, fromIndex, array);
-		if (_v0.$ === 'Nothing') {
-			return array;
-		} else {
-			var element = _v0.a;
-			return A3(
-				$author$project$Main$insert,
-				toIndex,
-				element,
-				A2($author$project$Main$remove, fromIndex, array));
-		}
-	});
 var $author$project$Main$update = F2(
-	function (msg, model) {
-		var _v0 = _Utils_Tuple2(msg, model.selected);
-		switch (_v0.a.$) {
-			case 'AddRequirement':
-				var actorIndex = _v0.a.a;
-				var _v1 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
-				if (_v1.$ === 'Nothing') {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				} else {
-					var actorRequirement = _v1.a;
-					var indexNewRequirement = $elm$core$Array$length(actorRequirement.requirements);
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								actorRequirements: A3(
-									$elm$core$Array$set,
-									actorIndex,
-									_Utils_update(
-										actorRequirement,
-										{
-											requirements: A2(
-												$elm$core$Array$push,
-												{id: 'a', text: ''},
-												actorRequirement.requirements)
-										}),
-									model.actorRequirements),
-								selected: A2($author$project$Main$RequirementInput, actorIndex, indexNewRequirement)
-							}),
-						A2(
-							$elm$core$Task$attempt,
-							$author$project$Main$Focus,
-							$elm$browser$Browser$Dom$focus(
-								A2($author$project$Main$requirementInputTagId, actorIndex, indexNewRequirement))));
-				}
-			case 'UpdateRequirementText':
-				var _v2 = _v0.a;
-				var actorIndex = _v2.a;
-				var requirementIndex = _v2.b;
-				var requirement = _v2.c;
-				var newText = _v2.d;
-				var _v3 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
-				if (_v3.$ === 'Nothing') {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				} else {
-					var actorRequirement = _v3.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								actorRequirements: A3(
-									$elm$core$Array$set,
-									actorIndex,
-									_Utils_update(
-										actorRequirement,
-										{
-											requirements: A3(
-												$elm$core$Array$set,
-												requirementIndex,
-												_Utils_update(
-													requirement,
-													{text: newText}),
-												actorRequirement.requirements)
-										}),
-									model.actorRequirements)
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
-			case 'ShowRequirementSelection':
-				var _v4 = _v0.a;
-				var actorIndex = _v4.a;
-				var requirementIndex = _v4.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selected: A2($author$project$Main$RequirementDropDownActions, actorIndex, requirementIndex)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'OpenRequirementInput':
-				var _v5 = _v0.a;
-				var actorIndex = _v5.a;
-				var requirementIndex = _v5.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selected: A2($author$project$Main$RequirementInput, actorIndex, requirementIndex)
-						}),
-					A2(
-						$elm$core$Task$attempt,
-						$author$project$Main$Focus,
-						$elm$browser$Browser$Dom$focus(
-							A2($author$project$Main$requirementInputTagId, actorIndex, requirementIndex))));
-			case 'DragStart':
-				var _v6 = _v0.a;
-				var actorIndex = _v6.a;
-				var requirementIndex = _v6.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selected: A2($author$project$Main$RequirementDragged, actorIndex, requirementIndex)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'DragEnter':
-				if (_v0.b.$ === 'RequirementDragged') {
-					var _v7 = _v0.a;
-					var toActorIndex = _v7.a;
-					var toRequirementIndex = _v7.b;
-					var _v8 = _v0.b;
-					var fromActorIndex = _v8.a;
-					var fromRequirementIndex = _v8.b;
-					var _v9 = A2($elm$core$Array$get, toActorIndex, model.actorRequirements);
-					if (_v9.$ === 'Nothing') {
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									actorRequirements: model.actorRequirements,
-									selected: A2($author$project$Main$RequirementDragged, toActorIndex, toRequirementIndex)
-								}),
-							$elm$core$Platform$Cmd$none);
-					} else {
-						var actorRequirement = _v9.a;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									actorRequirements: A3(
-										$elm$core$Array$set,
-										toActorIndex,
-										_Utils_update(
-											actorRequirement,
-											{
-												requirements: A3($author$project$Main$sort, fromRequirementIndex, toRequirementIndex, actorRequirement.requirements)
-											}),
-										model.actorRequirements),
-									selected: A2($author$project$Main$RequirementDragged, toActorIndex, toRequirementIndex)
-								}),
-							$elm$core$Platform$Cmd$none);
-					}
-				} else {
-					var _v10 = _v0.a;
-					var actorIndex = _v10.a;
-					var requirementIndex = _v10.b;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								actorRequirements: model.actorRequirements,
-								selected: A2($author$project$Main$RequirementDragged, actorIndex, requirementIndex)
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
-			case 'AddActor':
-				var _v11 = _v0.a;
-				var indexNewActor = $elm$core$Array$length(model.actorRequirements);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							actorRequirements: A2(
-								$elm$core$Array$push,
-								{
-									actor: $author$project$Main$Actor(
-										{id: 'a', name: ''}),
-									requirements: $elm$core$Array$empty
-								},
-								model.actorRequirements),
-							selected: $author$project$Main$ActorInput(indexNewActor)
-						}),
-					A2(
-						$elm$core$Task$attempt,
-						$author$project$Main$Focus,
-						$elm$browser$Browser$Dom$focus(
-							$author$project$Main$actorInputTagId(indexNewActor))));
-			case 'UpdateActorName':
-				var _v12 = _v0.a;
-				var actorIndex = _v12.a;
-				var actor = _v12.b.a;
-				var newName = _v12.c;
-				var _v13 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
-				if (_v13.$ === 'Nothing') {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				} else {
-					var actorRequirement = _v13.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								actorRequirements: A3(
-									$elm$core$Array$set,
-									actorIndex,
-									_Utils_update(
-										actorRequirement,
-										{
-											actor: $author$project$Main$Actor(
-												_Utils_update(
-													actor,
-													{name: newName}))
-										}),
-									model.actorRequirements)
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
-			case 'ShowActorSelection':
-				var actorIndex = _v0.a.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selected: $author$project$Main$ActorDropDownActions(actorIndex)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'OpenActorInput':
-				var actorIndex = _v0.a.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							selected: $author$project$Main$ActorInput(actorIndex)
-						}),
-					A2(
-						$elm$core$Task$attempt,
-						$author$project$Main$Focus,
-						$elm$browser$Browser$Dom$focus(
-							$author$project$Main$actorInputTagId(actorIndex))));
-			case 'DeleteRequirement':
-				var _v14 = _v0.a;
-				var actorIndex = _v14.a;
-				var requirementIndex = _v14.b;
-				var _v15 = A2($elm$core$Array$get, actorIndex, model.actorRequirements);
-				if (_v15.$ === 'Nothing') {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				} else {
-					var actorRequirement = _v15.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								actorRequirements: A3(
-									$elm$core$Array$set,
-									actorIndex,
-									_Utils_update(
-										actorRequirement,
-										{
-											requirements: A2($author$project$Main$remove, requirementIndex, actorRequirement.requirements)
-										}),
-									model.actorRequirements),
-								selected: $author$project$Main$NotSelected
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
-			case 'GoStatic':
-				var _v16 = _v0.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{selected: $author$project$Main$NotSelected}),
-					$elm$core$Platform$Cmd$none);
-			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
+	function (_v0, model) {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
-var $author$project$Main$AddActor = {$: 'AddActor'};
-var $author$project$Main$buttonAddActorRequirement = A2(
-	$elm$html$Html$button,
-	_List_fromArray(
-		[
-			$elm$html$Html$Attributes$class('bg-gray-400'),
-			$elm$html$Html$Attributes$class('p-1'),
-			$elm$html$Html$Events$onClick($author$project$Main$AddActor)
-		]),
-	_List_fromArray(
-		[
-			$elm$html$Html$text('add actor')
-		]));
-var $author$project$Main$AddRequirement = function (a) {
-	return {$: 'AddRequirement', a: a};
-};
-var $author$project$Main$buttonAddRequirement = function (actorIndex) {
-	return A2(
-		$elm$html$Html$button,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('bg-gray-400'),
-				$elm$html$Html$Attributes$class('p-1'),
-				$elm$html$Html$Events$onClick(
-				$author$project$Main$AddRequirement(actorIndex))
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('add requirement')
-			]));
-};
 var $elm$core$Array$toIndexedList = function (array) {
 	var len = array.a;
 	var helper = F2(
@@ -11102,135 +10575,6 @@ var $elm$core$Array$toIndexedList = function (array) {
 		_Utils_Tuple2(len - 1, _List_Nil),
 		array).b;
 };
-var $author$project$Main$OpenActorInput = function (a) {
-	return {$: 'OpenActorInput', a: a};
-};
-var $author$project$Main$actorName = function (_v0) {
-	var record = _v0.a;
-	return record.name;
-};
-var $author$project$Main$viewActorDropdown = F2(
-	function (actorIndex, actor) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							$author$project$Main$actorName(actor))
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$OpenActorInput(actorIndex))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('rename')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text('delete')
-						]))
-				]));
-	});
-var $author$project$Main$GoStatic = {$: 'GoStatic'};
-var $author$project$Main$UpdateActorName = F3(
-	function (a, b, c) {
-		return {$: 'UpdateActorName', a: a, b: b, c: c};
-	});
-var $elm$html$Html$Events$onBlur = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'blur',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$html$Html$Events$keyCode = A2($elm$json$Json$Decode$field, 'keyCode', $elm$json$Json$Decode$int);
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $author$project$Main$onEnter = function (msg) {
-	var isEnter = function (code) {
-		return (code === 13) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$fail('not ENTER');
-	};
-	var alwaysPreventDefault = function (code) {
-		return _Utils_Tuple2(code, true);
-	};
-	return A2(
-		$elm$html$Html$Events$preventDefaultOn,
-		'keydown',
-		A2(
-			$elm$json$Json$Decode$map,
-			alwaysPreventDefault,
-			A2($elm$json$Json$Decode$andThen, isEnter, $elm$html$Html$Events$keyCode)));
-};
-var $author$project$Main$viewActorNameInput = F2(
-	function (actorIndex, actor) {
-		return A2(
-			$elm$html$Html$input,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$id(
-					$author$project$Main$actorInputTagId(actorIndex)),
-					$elm$html$Html$Attributes$value(
-					$author$project$Main$actorName(actor)),
-					$elm$html$Html$Events$onBlur($author$project$Main$GoStatic),
-					$author$project$Main$onEnter($author$project$Main$GoStatic),
-					$elm$html$Html$Events$onInput(
-					A2($author$project$Main$UpdateActorName, actorIndex, actor))
-				]),
-			_List_Nil);
-	});
-var $author$project$Main$ShowActorSelection = function (a) {
-	return {$: 'ShowActorSelection', a: a};
-};
-var $author$project$Main$viewStaticActorName = F2(
-	function (actorIndex, actor) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$ShowActorSelection(actorIndex))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$author$project$Main$actorName(actor))
-				]));
-	});
-var $author$project$Main$viewActorName = F3(
-	function (actorIndex, actor, selection) {
-		switch (selection.$) {
-			case 'ActorInput':
-				var selectActorIndex = selection.a;
-				return _Utils_eq(actorIndex, selectActorIndex) ? A2($author$project$Main$viewActorNameInput, actorIndex, actor) : A2($author$project$Main$viewStaticActorName, actorIndex, actor);
-			case 'ActorDropDownActions':
-				var selectActorIndex = selection.a;
-				return _Utils_eq(actorIndex, selectActorIndex) ? A2($author$project$Main$viewActorDropdown, actorIndex, actor) : A2($author$project$Main$viewStaticActorName, actorIndex, actor);
-			default:
-				return A2($author$project$Main$viewStaticActorName, actorIndex, actor);
-		}
-	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
@@ -11260,228 +10604,149 @@ var $author$project$Main$viewActorSvg = A2(
 				]),
 			_List_Nil)
 		]));
-var $author$project$Main$DragEnter = F2(
-	function (a, b) {
-		return {$: 'DragEnter', a: a, b: b};
-	});
-var $author$project$Main$DragStart = F2(
-	function (a, b) {
-		return {$: 'DragStart', a: a, b: b};
-	});
-var $author$project$Main$ShowRequirementSelection = F2(
-	function (a, b) {
-		return {$: 'ShowRequirementSelection', a: a, b: b};
-	});
-var $elm$html$Html$Attributes$draggable = _VirtualDom_attribute('draggable');
-var $author$project$Main$onDragEnd = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'dragend',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Main$onDragEnter = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'dragenter',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Main$onDragStart = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'dragstart',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Main$viewRequirement = F3(
-	function (actorIndex, requirementIndex, requirement) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('m-2'),
-					$elm$html$Html$Attributes$draggable('true'),
-					$elm$html$Html$Events$onClick(
-					A2($author$project$Main$ShowRequirementSelection, actorIndex, requirementIndex)),
-					$author$project$Main$onDragStart(
-					A2($author$project$Main$DragStart, actorIndex, requirementIndex)),
-					$author$project$Main$onDragEnter(
-					A2($author$project$Main$DragEnter, actorIndex, requirementIndex)),
-					$author$project$Main$onDragEnd($author$project$Main$GoStatic)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(requirement.text)
-				]));
-	});
-var $author$project$Main$DeleteRequirement = F2(
-	function (a, b) {
-		return {$: 'DeleteRequirement', a: a, b: b};
-	});
-var $author$project$Main$OpenRequirementInput = F2(
-	function (a, b) {
-		return {$: 'OpenRequirementInput', a: a, b: b};
-	});
-var $author$project$Main$viewRequirementDropdown = F3(
-	function (actorIndex, requirementIndex, requirement) {
+var $author$project$Main$viewStaticActorName = F2(
+	function (_v0, actor) {
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A2(
-					$elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(requirement.text)
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							A2($author$project$Main$OpenRequirementInput, actorIndex, requirementIndex))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('rename')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							A2($author$project$Main$DeleteRequirement, actorIndex, requirementIndex))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('delete')
-						]))
+					$elm$html$Html$text(actor)
 				]));
 	});
-var $author$project$Main$viewRequirementFaded = F3(
-	function (actorIndex, requirementIndex, requirement) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('m-2'),
-					A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
-					$author$project$Main$onDragEnd($author$project$Main$GoStatic)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(requirement.text)
-				]));
-	});
-var $author$project$Main$UpdateRequirementText = F4(
-	function (a, b, c, d) {
-		return {$: 'UpdateRequirementText', a: a, b: b, c: c, d: d};
-	});
-var $author$project$Main$viewRequirementInput = F3(
-	function (actorIndex, requirementIndex, requirement) {
+var $author$project$Main$viewActor = F2(
+	function (index, actor) {
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A2(
-					$elm$html$Html$input,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$id(
-							A2($author$project$Main$requirementInputTagId, actorIndex, requirementIndex)),
-							$elm$html$Html$Attributes$value(requirement.text),
-							$elm$html$Html$Events$onBlur($author$project$Main$GoStatic),
-							$author$project$Main$onEnter($author$project$Main$GoStatic),
-							$elm$html$Html$Events$onInput(
-							A3($author$project$Main$UpdateRequirementText, actorIndex, requirementIndex, requirement))
-						]),
-					_List_Nil)
+					$author$project$Main$viewActorSvg,
+					A2($author$project$Main$viewStaticActorName, index, actor)
 				]));
 	});
-var $author$project$Main$viewRequirementList = F3(
-	function (actorIndex, array, selection) {
+var $author$project$Main$viewExplanation = function (explanation) {
+	var classes = _List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('p-1'),
+			$elm$html$Html$Attributes$class('h-20')
+		]);
+	return $elm$core$String$isEmpty(explanation) ? A2(
+		$elm$html$Html$div,
+		A2(
+			$elm$core$List$cons,
+			A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
+			classes),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('please click here to fill in the explanation')
+			])) : A2(
+		$elm$html$Html$div,
+		classes,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(explanation)
+			]));
+};
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$Main$viewExternalSystemSvg = A2(
+	$elm$svg$Svg$svg,
+	_List_fromArray(
+		[
+			$elm$svg$Svg$Attributes$width('50'),
+			$elm$svg$Svg$Attributes$height('50'),
+			$elm$svg$Svg$Attributes$viewBox('0 0 50 50')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$rect,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$x('0'),
+					$elm$svg$Svg$Attributes$y('0'),
+					$elm$svg$Svg$Attributes$width('50'),
+					$elm$svg$Svg$Attributes$height('50')
+				]),
+			_List_Nil)
+		]));
+var $author$project$Main$viewStaticExternalSystemName = F2(
+	function (_v0, externalSystem) {
 		return A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var requirementIndex = _v0.a;
-				var requirement = _v0.b;
-				switch (selection.$) {
-					case 'NotSelected':
-						return A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
-					case 'RequirementInput':
-						var selectActorIndex = selection.a;
-						var selectRequirementIndex = selection.b;
-						return (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) ? A3($author$project$Main$viewRequirementInput, actorIndex, requirementIndex, requirement) : A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
-					case 'RequirementDropDownActions':
-						var selectActorIndex = selection.a;
-						var selectRequirementIndex = selection.b;
-						return (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) ? A3($author$project$Main$viewRequirementDropdown, actorIndex, requirementIndex, requirement) : A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
-					case 'RequirementDragged':
-						var selectActorIndex = selection.a;
-						var selectRequirementIndex = selection.b;
-						return (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) ? A3($author$project$Main$viewRequirementFaded, actorIndex, requirementIndex, requirement) : A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
-					default:
-						return A3($author$project$Main$viewRequirement, actorIndex, requirementIndex, requirement);
-				}
-			},
-			$elm$core$Array$toIndexedList(array));
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text(externalSystem)
+				]));
 	});
+var $author$project$Main$viewExternalSystem = F2(
+	function (index, externalSystem) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$author$project$Main$viewExternalSystemSvg,
+					A2($author$project$Main$viewStaticExternalSystemName, index, externalSystem)
+				]));
+	});
+var $author$project$Main$viewPurpose = function (purpose) {
+	var classes = _List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('p-1'),
+			$elm$html$Html$Attributes$class('h-16')
+		]);
+	return $elm$core$String$isEmpty(purpose) ? A2(
+		$elm$html$Html$div,
+		A2(
+			$elm$core$List$cons,
+			A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
+			classes),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('please click here to fill in the purpose')
+			])) : A2(
+		$elm$html$Html$div,
+		classes,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(purpose)
+			]));
+};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
-		A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var actorIndex = _v0.a;
-				var actorRequirement = _v0.b;
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('m-4'),
-							$elm$html$Html$Attributes$class('p-4')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											A2($elm$html$Html$Attributes$style, 'width', '200px'),
-											$elm$html$Html$Attributes$class('m-4')
-										]),
-									_List_fromArray(
-										[
-											$author$project$Main$viewActorSvg,
-											A3($author$project$Main$viewActorName, actorIndex, actorRequirement.actor, model.selected)
-										])),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											A2($elm$html$Html$Attributes$style, 'width', '300px'),
-											$elm$html$Html$Attributes$class('m-4'),
-											$elm$html$Html$Attributes$class('p-2')
-										]),
-									A2(
-										$elm$core$List$append,
-										A3($author$project$Main$viewRequirementList, actorIndex, actorRequirement.requirements, model.selected),
-										_List_fromArray(
-											[
-												$author$project$Main$buttonAddRequirement(actorIndex)
-											])))
-								])),
-							$author$project$Main$buttonAddActorRequirement
-						]));
-			},
-			$elm$core$Array$toIndexedList(model.actorRequirements)));
+		_List_fromArray(
+			[
+				$author$project$Main$viewPurpose(model.purpose),
+				$author$project$Main$viewExplanation(model.explanation),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var index = _v0.a;
+						var actor = _v0.b;
+						return A2($author$project$Main$viewActor, index, actor);
+					},
+					$elm$core$Array$toIndexedList(model.actors))),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (_v1) {
+						var index = _v1.a;
+						var externalSystem = _v1.b;
+						return A2($author$project$Main$viewExternalSystem, index, externalSystem);
+					},
+					$elm$core$Array$toIndexedList(model.externalSystems)))
+			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
@@ -11493,4 +10758,4 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Requirement":{"args":[],"type":"{ id : String.String, text : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"AddRequirement":["Basics.Int"],"UpdateRequirementText":["Basics.Int","Basics.Int","Main.Requirement","String.String"],"ShowRequirementSelection":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"DeleteRequirement":["Basics.Int","Basics.Int"],"DragStart":["Basics.Int","Basics.Int"],"DragEnter":["Basics.Int","Basics.Int"],"AddActor":[],"UpdateActorName":["Basics.Int","Main.Actor","String.String"],"ShowActorSelection":["Basics.Int"],"OpenActorInput":["Basics.Int"],"GoStatic":[],"Focus":["Result.Result Browser.Dom.Error ()"]}},"Main.Actor":{"args":[],"tags":{"Actor":["{ id : String.String, name : String.String }"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[]}}}}})}});}(this));
