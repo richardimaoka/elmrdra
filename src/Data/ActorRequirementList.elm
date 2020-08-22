@@ -1,21 +1,21 @@
-module Data.ActorRequirementList exposing (ActorRequirementList)
+module Data.ActorRequirementList exposing (ActorRequirementList, insert, push, remove, set, sort)
 
 import Array exposing (Array)
 import Data.Actor exposing (Actor)
+import Data.ArrayExtend as ArrayExtend
 import Data.Requirement exposing (Requirement)
-import Data.RequirementList exposing (RequirementList, insert, push, remove, sort, updateAt)
 
 
 type ActorRequirementList
     = ActorRequirementList
         (Array
             { actor : Actor
-            , requirements : RequirementList
+            , requirements : Array Requirement
             }
         )
 
 
-internalUpdate : Int -> (RequirementList -> RequirementList) -> ActorRequirementList -> ActorRequirementList
+internalUpdate : Int -> (Array Requirement -> Array Requirement) -> ActorRequirementList -> ActorRequirementList
 internalUpdate actorIndex updator (ActorRequirementList array) =
     --do not expose this function
     case Array.get actorIndex array of
@@ -31,26 +31,26 @@ internalUpdate actorIndex updator (ActorRequirementList array) =
                 )
 
 
-updateRequirementAt : ( Int, Int ) -> String -> ActorRequirementList -> ActorRequirementList
-updateRequirementAt ( actorIndex, requirementIndex ) str list =
-    internalUpdate actorIndex (updateAt requirementIndex str) list
+set : ( Int, Int ) -> Requirement -> ActorRequirementList -> ActorRequirementList
+set ( actorIndex, requirementIndex ) requirement list =
+    internalUpdate actorIndex (Array.set requirementIndex requirement) list
 
 
-pushRequirement : Int -> Requirement -> ActorRequirementList -> ActorRequirementList
-pushRequirement actorIndex requirement list =
-    internalUpdate actorIndex (push requirement) list
+push : Int -> Requirement -> ActorRequirementList -> ActorRequirementList
+push actorIndex requirement list =
+    internalUpdate actorIndex (Array.push requirement) list
 
 
-insertRequirement : ( Int, Int ) -> Requirement -> ActorRequirementList -> ActorRequirementList
-insertRequirement ( actorIndex, requirementIndex ) requirement list =
-    internalUpdate actorIndex (insert requirementIndex requirement) list
+insert : ( Int, Int ) -> Requirement -> ActorRequirementList -> ActorRequirementList
+insert ( actorIndex, requirementIndex ) requirement list =
+    internalUpdate actorIndex (ArrayExtend.insert requirementIndex requirement) list
 
 
-removeRequirement : ( Int, Int ) -> ActorRequirementList -> ActorRequirementList
-removeRequirement ( actorIndex, requirementIndex ) list =
-    internalUpdate actorIndex (remove requirementIndex) list
+remove : ( Int, Int ) -> ActorRequirementList -> ActorRequirementList
+remove ( actorIndex, requirementIndex ) list =
+    internalUpdate actorIndex (ArrayExtend.remove requirementIndex) list
 
 
-sortRequirements : Int -> Int -> Int -> ActorRequirementList -> ActorRequirementList
-sortRequirements actorIndex fromRequirementIndex toRequirementIndex list =
-    internalUpdate actorIndex (sort fromRequirementIndex toRequirementIndex) list
+sort : Int -> Int -> Int -> ActorRequirementList -> ActorRequirementList
+sort actorIndex fromRequirementIndex toRequirementIndex list =
+    internalUpdate actorIndex (ArrayExtend.sort fromRequirementIndex toRequirementIndex) list

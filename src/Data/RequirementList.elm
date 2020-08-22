@@ -1,65 +1,40 @@
-module Data.RequirementList exposing (RequirementList, insert, push, remove, sort, toStringList, updateAt)
+module Data.RequirementList exposing (RequirementList, insert, push, remove, set, sort)
 
 import Array exposing (Array)
 import Data.ArrayExtend as ArrayExtend exposing (insert, remove, sort)
-import Data.Requirement exposing (Requirement, text, update)
+import Data.Requirement exposing (Requirement)
 
 
 type RequirementList
     = RequirementList (Array Requirement)
 
 
-toStringList : RequirementList -> List String
-toStringList list =
-    case list of
-        RequirementList array ->
-            Array.toList array |> List.map text
+internalUpdate : (Array Requirement -> Array Requirement) -> RequirementList -> RequirementList
+internalUpdate updator (RequirementList array) =
+    --do not expose this function
+    RequirementList (updator array)
 
 
-length : RequirementList -> Int
-length list =
-    -- do not expose this method
-    case list of
-        RequirementList array ->
-            Array.length array
-
-
-updateAt : Int -> String -> RequirementList -> RequirementList
-updateAt index str list =
-    case list of
-        RequirementList array ->
-            case Array.get index array of
-                Nothing ->
-                    list
-
-                Just requirement ->
-                    RequirementList <|
-                        Array.set index (update str requirement) array
+set : Int -> Requirement -> RequirementList -> RequirementList
+set index requirement list =
+    internalUpdate (Array.set index requirement) list
 
 
 push : Requirement -> RequirementList -> RequirementList
 push requirement list =
-    case list of
-        RequirementList array ->
-            RequirementList <| Array.push requirement array
+    internalUpdate (Array.push requirement) list
 
 
 insert : Int -> Requirement -> RequirementList -> RequirementList
 insert index requirement list =
-    case list of
-        RequirementList array ->
-            RequirementList <| ArrayExtend.insert index requirement array
+    internalUpdate (ArrayExtend.insert index requirement) list
 
 
 remove : Int -> RequirementList -> RequirementList
 remove index list =
-    case list of
-        RequirementList array ->
-            RequirementList <| ArrayExtend.remove index array
+    internalUpdate (ArrayExtend.remove index) list
 
 
 sort : Int -> Int -> RequirementList -> RequirementList
 sort fromIndex toIndex list =
-    case list of
-        RequirementList array ->
-            RequirementList <| ArrayExtend.sort fromIndex toIndex array
+    internalUpdate (ArrayExtend.sort fromIndex toIndex) list
