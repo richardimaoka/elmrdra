@@ -8,7 +8,7 @@ import Data.RequirementModel as RequirementModel exposing (RequirementModel, get
 import Dict exposing (fromList)
 import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (class, draggable, id, style, value)
-import Html.Events exposing (keyCode, on, onBlur, onClick, onDoubleClick, onInput, preventDefaultOn)
+import Html.Events exposing (keyCode, on, onBlur, onClick, onDoubleClick, onInput, preventDefaultOn, stopPropagationOn)
 import Json.Decode as Decode
 import Svg exposing (circle, rect, svg)
 import Svg.Attributes exposing (cx, cy, height, r, viewBox, width, x, y)
@@ -63,17 +63,27 @@ buttonAddActorRequirement newActorIndex =
 viewEachActorRequirement : Int -> String -> RequirementArray -> ModelControl -> Html Msg
 viewEachActorRequirement actorIndex actorName requirements control =
     let
-        opacity =
+        defaultAttributes =
+            [ draggable "true"
+            , onDragStart <| DragStartActor actorIndex
+            , onDragEnd LeaveControl
+            ]
+
+        attributes =
             case getActorDragged control of
                 Nothing ->
-                    "1.0"
+                    style "opacity" "1.0" :: defaultAttributes
 
                 Just selectIndex ->
                     if actorIndex == selectIndex then
-                        "0.5"
+                        style "opacity" "0.5" :: defaultAttributes
 
                     else
-                        "1.0"
+                        List.append
+                            [ style "opacity" "1.0"
+                            , onDragEnter <| DragEnterActor selectIndex actorIndex
+                            ]
+                            defaultAttributes
 
         maybeActorEditState =
             getActorEditState control
@@ -82,11 +92,7 @@ viewEachActorRequirement actorIndex actorName requirements control =
             getRequirementControl control
     in
     div
-        [ draggable "true"
-        , style "opacity" opacity
-        , onDragStart <| DragStartActor actorIndex
-        , onDragEnd LeaveControl
-        ]
+        attributes
         [ viewActor actorIndex maybeActorEditState actorName
         , viewRequirementList actorIndex maybeRequirementControl requirements
         ]
@@ -199,6 +205,7 @@ viewRequirement ( actorIndex, requirementIndex ) maybeControl requirementContent
     div
         [ class "m-2"
         , draggable "true"
+        , onDragStart <| DragStartRequirement actorIndex requirementIndex
         ]
         [ case maybeControl of
             Nothing ->
@@ -240,7 +247,7 @@ onEnter msg =
 
 onDragStart : Msg -> Attribute Msg
 onDragStart msg =
-    on "dragstart" <| Decode.succeed msg
+    stopPropagationOn "dragstart" <| Decode.succeed ( msg, True )
 
 
 onDragEnd : Msg -> Attribute Msg
@@ -263,8 +270,8 @@ init _ =
     ( { requirementModel =
             RequirementModel.initialize
                 (Dict.fromList
-                    [ ( "actor1", [ "req1", "req2" ] )
-                    , ( "actor2", [ "req1", "req2" ] )
+                    [ ( "actor1", [ "req1-1", "req1-2" ] )
+                    , ( "actor2", [ "req2-1", "req2-2" ] )
                     ]
                 )
                 [ "aaa" ]
@@ -309,6 +316,14 @@ update msg model =
             , Cmd.none
             )
 
+        DragEnterActor fromActorIndex toActorIndex ->
+            ( { model
+                | requirementModel = RequirementModel.sortActor fromActorIndex toActorIndex model.requirementModel
+                , control = ActorDragged toActorIndex
+              }
+            , Cmd.none
+            )
+
         LeaveControl ->
             ( { model | control = NoControl }
             , Cmd.none
@@ -326,8 +341,7 @@ type Msg
     | OpenActorInput Int
     | FocusActorInput (Result Dom.Error ())
     | DragStartActor Int
-    | DragEndActor Int
-    | DragEnterActor Int
+    | DragEnterActor Int Int
       -- Requirement messages
     | PushRequirement Int Int
     | UpdateRequirementContent Int Int String

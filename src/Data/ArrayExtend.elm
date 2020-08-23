@@ -15,7 +15,7 @@ update index updater array =
 
 insert : Int -> a -> Array a -> Array a
 insert index element array =
-    if index < 0 || Array.length array <= index then
+    if index < 0 || Array.length array < index then
         array
 
     else

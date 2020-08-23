@@ -10638,11 +10638,11 @@ var $author$project$Main$init = function (_v0) {
 							_Utils_Tuple2(
 							'actor1',
 							_List_fromArray(
-								['req1', 'req2'])),
+								['req1-1', 'req1-2'])),
 							_Utils_Tuple2(
 							'actor2',
 							_List_fromArray(
-								['req1', 'req2']))
+								['req2-1', 'req2-2']))
 						])),
 				_List_fromArray(
 					['aaa']),
@@ -10810,6 +10810,154 @@ var $author$project$Data$RequirementModel$renameActor = F3(
 			},
 			model);
 	});
+var $elm$core$Array$appendHelpTree = F2(
+	function (toAppend, array) {
+		var len = array.a;
+		var tree = array.c;
+		var tail = array.d;
+		var itemsToAppend = $elm$core$Elm$JsArray$length(toAppend);
+		var notAppended = ($elm$core$Array$branchFactor - $elm$core$Elm$JsArray$length(tail)) - itemsToAppend;
+		var appended = A3($elm$core$Elm$JsArray$appendN, $elm$core$Array$branchFactor, tail, toAppend);
+		var newArray = A2($elm$core$Array$unsafeReplaceTail, appended, array);
+		if (notAppended < 0) {
+			var nextTail = A3($elm$core$Elm$JsArray$slice, notAppended, itemsToAppend, toAppend);
+			return A2($elm$core$Array$unsafeReplaceTail, nextTail, newArray);
+		} else {
+			return newArray;
+		}
+	});
+var $elm$core$Array$builderFromArray = function (_v0) {
+	var len = _v0.a;
+	var tree = _v0.c;
+	var tail = _v0.d;
+	var helper = F2(
+		function (node, acc) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return A3($elm$core$Elm$JsArray$foldl, helper, acc, subTree);
+			} else {
+				return A2($elm$core$List$cons, node, acc);
+			}
+		});
+	return {
+		nodeList: A3($elm$core$Elm$JsArray$foldl, helper, _List_Nil, tree),
+		nodeListSize: (len / $elm$core$Array$branchFactor) | 0,
+		tail: tail
+	};
+};
+var $elm$core$Array$append = F2(
+	function (a, _v0) {
+		var aTail = a.d;
+		var bLen = _v0.a;
+		var bTree = _v0.c;
+		var bTail = _v0.d;
+		if (_Utils_cmp(bLen, $elm$core$Array$branchFactor * 4) < 1) {
+			var foldHelper = F2(
+				function (node, array) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3($elm$core$Elm$JsArray$foldl, foldHelper, array, tree);
+					} else {
+						var leaf = node.a;
+						return A2($elm$core$Array$appendHelpTree, leaf, array);
+					}
+				});
+			return A2(
+				$elm$core$Array$appendHelpTree,
+				bTail,
+				A3($elm$core$Elm$JsArray$foldl, foldHelper, a, bTree));
+		} else {
+			var foldHelper = F2(
+				function (node, builder) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3($elm$core$Elm$JsArray$foldl, foldHelper, builder, tree);
+					} else {
+						var leaf = node.a;
+						return A2($elm$core$Array$appendHelpBuilder, leaf, builder);
+					}
+				});
+			return A2(
+				$elm$core$Array$builderToArray,
+				true,
+				A2(
+					$elm$core$Array$appendHelpBuilder,
+					bTail,
+					A3(
+						$elm$core$Elm$JsArray$foldl,
+						foldHelper,
+						$elm$core$Array$builderFromArray(a),
+						bTree)));
+		}
+	});
+var $author$project$Data$ArrayExtend$insert = F3(
+	function (index, element, array) {
+		if ((index < 0) || (_Utils_cmp(
+			$elm$core$Array$length(array),
+			index) < 0)) {
+			return array;
+		} else {
+			var upper = A3($elm$core$Array$slice, 0, index, array);
+			var lower = A3(
+				$elm$core$Array$slice,
+				index,
+				$elm$core$Array$length(array),
+				array);
+			return A2(
+				$elm$core$Array$append,
+				A2($elm$core$Array$push, element, upper),
+				lower);
+		}
+	});
+var $author$project$Data$ArrayExtend$remove = F2(
+	function (index, array) {
+		if ((index < 0) || (_Utils_cmp(
+			$elm$core$Array$length(array),
+			index) < 1)) {
+			return array;
+		} else {
+			var upper = A3($elm$core$Array$slice, 0, index, array);
+			var lower = A3(
+				$elm$core$Array$slice,
+				index + 1,
+				$elm$core$Array$length(array),
+				array);
+			return A2($elm$core$Array$append, upper, lower);
+		}
+	});
+var $author$project$Data$ArrayExtend$sort = F3(
+	function (fromIndex, toIndex, array) {
+		var _v0 = A2($elm$core$Array$get, fromIndex, array);
+		if (_v0.$ === 'Nothing') {
+			return array;
+		} else {
+			var element = _v0.a;
+			return A3(
+				$author$project$Data$ArrayExtend$insert,
+				toIndex,
+				element,
+				A2($author$project$Data$ArrayExtend$remove, fromIndex, array));
+		}
+	});
+var $author$project$Data$ActorRequirementList$sortActor = F3(
+	function (fromIndex, toIndex, _v0) {
+		var array = _v0.a;
+		return $author$project$Data$ActorRequirementList$ActorRequirementList(
+			A3($author$project$Data$ArrayExtend$sort, fromIndex, toIndex, array));
+	});
+var $author$project$Data$RequirementModel$sortActor = F3(
+	function (fromIndex, toIndex, model) {
+		return A2(
+			$author$project$Data$RequirementModel$internalWrapper,
+			function (record) {
+				return _Utils_update(
+					record,
+					{
+						actorRequirements: A3($author$project$Data$ActorRequirementList$sortActor, fromIndex, toIndex, record.actorRequirements)
+					});
+			},
+			model);
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -10871,6 +11019,17 @@ var $author$project$Main$update = F2(
 						model,
 						{
 							control: $author$project$Main$ActorDragged(actorIndex)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'DragEnterActor':
+				var fromActorIndex = msg.a;
+				var toActorIndex = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							control: $author$project$Main$ActorDragged(toActorIndex),
+							requirementModel: A3($author$project$Data$RequirementModel$sortActor, fromActorIndex, toActorIndex, model.requirementModel)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'LeaveControl':
@@ -10952,6 +11111,10 @@ var $elm$core$Array$toIndexedList = function (array) {
 		_Utils_Tuple2(len - 1, _List_Nil),
 		array).b;
 };
+var $author$project$Main$DragEnterActor = F2(
+	function (a, b) {
+		return {$: 'DragEnterActor', a: a, b: b};
+	});
 var $author$project$Main$DragStartActor = function (a) {
 	return {$: 'DragStartActor', a: a};
 };
@@ -11006,11 +11169,18 @@ var $author$project$Main$onDragEnd = function (msg) {
 		'dragend',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Main$onDragStart = function (msg) {
+var $author$project$Main$onDragEnter = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
-		'dragstart',
+		'dragenter',
 		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Main$onDragStart = function (msg) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'dragstart',
+		$elm$json$Json$Decode$succeed(
+			_Utils_Tuple2(msg, true)));
 };
 var $author$project$Main$OpenActorInput = function (a) {
 	return {$: 'OpenActorInput', a: a};
@@ -11202,6 +11372,10 @@ var $author$project$Main$buttonAddRequirement = function (actorIndex) {
 				$elm$html$Html$text('add requirement')
 			]));
 };
+var $author$project$Main$DragStartRequirement = F2(
+	function (a, b) {
+		return {$: 'DragStartRequirement', a: a, b: b};
+	});
 var $author$project$Main$viewRequirement = F3(
 	function (_v0, maybeControl, requirementContent) {
 		var actorIndex = _v0.a;
@@ -11211,7 +11385,9 @@ var $author$project$Main$viewRequirement = F3(
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('m-2'),
-					$elm$html$Html$Attributes$draggable('true')
+					$elm$html$Html$Attributes$draggable('true'),
+					$author$project$Main$onDragStart(
+					A2($author$project$Main$DragStartRequirement, actorIndex, requirementIndex))
 				]),
 			_List_fromArray(
 				[
@@ -11271,27 +11447,41 @@ var $author$project$Main$viewRequirementList = F3(
 	});
 var $author$project$Main$viewEachActorRequirement = F4(
 	function (actorIndex, actorName, requirements, control) {
-		var opacity = function () {
-			var _v0 = $author$project$Main$getActorDragged(control);
-			if (_v0.$ === 'Nothing') {
-				return '1.0';
-			} else {
-				var selectIndex = _v0.a;
-				return _Utils_eq(actorIndex, selectIndex) ? '0.5' : '1.0';
-			}
-		}();
 		var maybeRequirementControl = $author$project$Main$getRequirementControl(control);
 		var maybeActorEditState = $author$project$Main$getActorEditState(control);
+		var defaultAttributes = _List_fromArray(
+			[
+				$elm$html$Html$Attributes$draggable('true'),
+				$author$project$Main$onDragStart(
+				$author$project$Main$DragStartActor(actorIndex)),
+				$author$project$Main$onDragEnd($author$project$Main$LeaveControl)
+			]);
+		var attributes = function () {
+			var _v0 = $author$project$Main$getActorDragged(control);
+			if (_v0.$ === 'Nothing') {
+				return A2(
+					$elm$core$List$cons,
+					A2($elm$html$Html$Attributes$style, 'opacity', '1.0'),
+					defaultAttributes);
+			} else {
+				var selectIndex = _v0.a;
+				return _Utils_eq(actorIndex, selectIndex) ? A2(
+					$elm$core$List$cons,
+					A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
+					defaultAttributes) : A2(
+					$elm$core$List$append,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'opacity', '1.0'),
+							$author$project$Main$onDragEnter(
+							A2($author$project$Main$DragEnterActor, selectIndex, actorIndex))
+						]),
+					defaultAttributes);
+			}
+		}();
 		return A2(
 			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$draggable('true'),
-					A2($elm$html$Html$Attributes$style, 'opacity', opacity),
-					$author$project$Main$onDragStart(
-					$author$project$Main$DragStartActor(actorIndex)),
-					$author$project$Main$onDragEnd($author$project$Main$LeaveControl)
-				]),
+			attributes,
 			_List_fromArray(
 				[
 					A3($author$project$Main$viewActor, actorIndex, maybeActorEditState, actorName),
@@ -11344,4 +11534,4 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"PushActor":["Basics.Int"],"UpdateActorName":["Basics.Int","String.String"],"ShowActorDropDown":["Basics.Int"],"OpenActorInput":["Basics.Int"],"FocusActorInput":["Result.Result Browser.Dom.Error ()"],"DragStartActor":["Basics.Int"],"DragEndActor":["Basics.Int"],"DragEnterActor":["Basics.Int"],"PushRequirement":["Basics.Int","Basics.Int"],"UpdateRequirementContent":["Basics.Int","Basics.Int","String.String"],"ShowRequirementDropDown":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"FocusRequirementInput":["Result.Result Browser.Dom.Error ()"],"DeleteRequirement":["Basics.Int","Basics.Int"],"DragStartRequirement":["Basics.Int","Basics.Int"],"DragEndRequirement":["Basics.Int","Basics.Int"],"DragEnterRequirement":["Basics.Int","Basics.Int"],"LeaveControl":[]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"PushActor":["Basics.Int"],"UpdateActorName":["Basics.Int","String.String"],"ShowActorDropDown":["Basics.Int"],"OpenActorInput":["Basics.Int"],"FocusActorInput":["Result.Result Browser.Dom.Error ()"],"DragStartActor":["Basics.Int"],"DragEnterActor":["Basics.Int","Basics.Int"],"PushRequirement":["Basics.Int","Basics.Int"],"UpdateRequirementContent":["Basics.Int","Basics.Int","String.String"],"ShowRequirementDropDown":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"FocusRequirementInput":["Result.Result Browser.Dom.Error ()"],"DeleteRequirement":["Basics.Int","Basics.Int"],"DragStartRequirement":["Basics.Int","Basics.Int"],"DragEndRequirement":["Basics.Int","Basics.Int"],"DragEnterRequirement":["Basics.Int","Basics.Int"],"LeaveControl":[]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
