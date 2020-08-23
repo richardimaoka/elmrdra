@@ -3,14 +3,16 @@ module Main exposing (main)
 import Array exposing (Array)
 import Browser exposing (element)
 import Browser.Dom as Dom
+import Data.Actor as Actor exposing (create)
 import Data.RequirementModel as RequirementModel exposing (RequirementModel, getActorRequirements, initialize)
 import Dict exposing (fromList)
-import Html exposing (Attribute, Html, button, div, text)
-import Html.Attributes exposing (class, style)
-import Html.Events exposing (keyCode, on, preventDefaultOn)
+import Html exposing (Attribute, Html, button, div, input, text)
+import Html.Attributes exposing (class, draggable, id, style, value)
+import Html.Events exposing (keyCode, on, onBlur, onClick, onDoubleClick, onInput, preventDefaultOn)
 import Json.Decode as Decode
 import Svg exposing (circle, rect, svg)
 import Svg.Attributes exposing (cx, cy, height, r, viewBox, width, x, y)
+import Task
 
 
 main : Program () Model Msg
@@ -41,24 +43,25 @@ viewActorRequirementPanel actorRequirements control =
             (Array.toIndexedList actorRequirements
                 |> List.map
                     (\( actorIndex, ( actorName, requirements ) ) ->
-                        viewActorRequirementBox actorIndex actorName requirements control
+                        viewEachActorRequirement actorIndex actorName requirements control
                     )
             )
-            [ buttonAddActorRequirement ]
+            [ buttonAddActorRequirement <| Array.length actorRequirements ]
         )
 
 
-buttonAddActorRequirement : Html Msg
-buttonAddActorRequirement =
+buttonAddActorRequirement : Int -> Html Msg
+buttonAddActorRequirement newActorIndex =
     button
         [ class "bg-gray-400"
         , class "p-1"
+        , onClick <| PushActor newActorIndex
         ]
         [ text "add actor" ]
 
 
-viewActorRequirementBox : Int -> String -> RequirementArray -> ModelControl -> Html Msg
-viewActorRequirementBox actorIndex actorName requirements control =
+viewEachActorRequirement : Int -> String -> RequirementArray -> ModelControl -> Html Msg
+viewEachActorRequirement actorIndex actorName requirements control =
     let
         maybeActorControl =
             getActorControl control
@@ -66,9 +69,59 @@ viewActorRequirementBox actorIndex actorName requirements control =
         maybeRequirementControl =
             getRequirementControl control
     in
-    div []
+    div
+        [ draggable "true"
+        , onDragStart <| DragStartActor actorIndex
+        ]
         [ viewActor actorIndex maybeActorControl actorName
         , viewRequirementList actorIndex maybeRequirementControl requirements
+        ]
+
+
+viewEachActorRequirementFaded : Int -> String -> RequirementArray -> Html Msg
+viewEachActorRequirementFaded actorIndex actorName requirements =
+    div
+        [ style "opacity" "0.5"
+        , onDragEnd <| DragEndActor actorIndex
+        ]
+        [ viewActor1 actorIndex actorName
+        , viewRequirementList actorIndex Nothing requirements
+        ]
+
+
+viewActor1 : Int -> String -> Html Msg
+viewActor1 actorIndex actorName =
+    div
+        [ class "m-4"
+        , class "p-4"
+        , style "max-width" "200px"
+        ]
+        [ viewActorSvg
+        , viewStaticActorName actorIndex actorName
+        ]
+
+
+viewActor2 : Int -> String -> Html Msg
+viewActor2 actorIndex actorName =
+    div
+        [ class "m-4"
+        , class "p-4"
+        , style "max-width" "200px"
+        ]
+        [ viewActorSvg
+        , viewActorNameInput actorIndex actorName
+        ]
+
+
+viewActor3 : Int -> String -> Html Msg
+viewActor3 actorIndex actorName =
+    div
+        [ class "m-4"
+        , class "p-4"
+        , style "max-width" "200px"
+        ]
+        [ viewActorSvg
+        , viewActorDropdown actorIndex actorName
         ]
 
 
@@ -88,13 +141,13 @@ viewActor actorIndex maybeControl actorName =
                 if actorIndex == selectIndex then
                     case actorControl of
                         ActorDropDown ->
-                            viewStaticActorName actorIndex actorName
+                            viewActorDropdown actorIndex actorName
 
                         ActorInput ->
-                            viewStaticActorName actorIndex actorName
+                            viewActorNameInput actorIndex actorName
 
                         ActorDragged ->
-                            viewStaticActorName actorIndex actorName
+                            viewStaticActorNameFaded actorIndex actorName
 
                 else
                     viewStaticActorName actorIndex actorName
@@ -110,7 +163,54 @@ viewActorSvg =
 
 viewStaticActorName : Int -> String -> Html Msg
 viewStaticActorName actorIndex actorName =
-    div [] [ text <| actorName ]
+    div
+        [ style "min-height" "16px"
+        , class "p-1"
+        , onClick <| ShowActorDropDown actorIndex
+        , onDoubleClick <| OpenActorInput actorIndex
+        ]
+        [ text <| actorName ]
+
+
+viewStaticActorNameFaded : Int -> String -> Html Msg
+viewStaticActorNameFaded actorIndex actorName =
+    div
+        [ style "min-height" "16px"
+        , style "opacity" "0.5"
+        , class "p-1"
+        , onClick <| ShowActorDropDown actorIndex
+        , onDoubleClick <| OpenActorInput actorIndex
+        ]
+        [ text <| actorName ]
+
+
+viewActorNameInput : Int -> String -> Html Msg
+viewActorNameInput actorIndex actorName =
+    input
+        [ id <| actorInputTagId actorIndex
+        , style "max-width" "160px"
+        , class "border-2"
+        , class "p-1"
+        , value <| actorName
+        , onBlur LeaveControl
+        , onEnter LeaveControl
+        , onInput <| UpdateActorName actorIndex
+        ]
+        []
+
+
+viewActorDropdown : Int -> String -> Html Msg
+viewActorDropdown actorIndex actorName =
+    div []
+        [ viewStaticActorName actorIndex actorName
+        , div [ onClick <| OpenActorInput actorIndex ] [ text "rename" ]
+        , div [] [ text "delete" ]
+        ]
+
+
+actorInputTagId : Int -> String
+actorInputTagId actorIndex =
+    "input-actor-" ++ String.fromInt actorIndex
 
 
 viewRequirementList : Int -> Maybe ( RequirementControl, ( Int, Int ) ) -> RequirementArray -> Html Msg
@@ -144,7 +244,10 @@ buttonAddRequirement actorIndex =
 
 viewRequirement : ( Int, Int ) -> Maybe ( RequirementControl, ( Int, Int ) ) -> String -> Html Msg
 viewRequirement ( actorIndex, requirementIndex ) maybeControl requirementContent =
-    div [ class "m-2" ]
+    div
+        [ class "m-2"
+        , draggable "true"
+        ]
         [ case maybeControl of
             Nothing ->
                 text requirementContent
@@ -222,29 +325,69 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        PushActor newActorIndex ->
+            ( { model
+                | requirementModel = RequirementModel.pushActor (Actor.create "") model.requirementModel
+                , control = ActorControl ActorInput newActorIndex
+              }
+            , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId newActorIndex)
+            )
+
+        UpdateActorName actorIndex newName ->
+            ( { model | requirementModel = RequirementModel.renameActor actorIndex newName model.requirementModel }
+            , Cmd.none
+            )
+
+        ShowActorDropDown actorIndex ->
+            ( { model | control = ActorControl ActorDropDown actorIndex }
+            , Cmd.none
+            )
+
+        OpenActorInput actorIndex ->
+            ( { model | control = ActorControl ActorInput actorIndex }
+            , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId actorIndex)
+            )
+
+        FocusActorInput _ ->
+            ( model, Cmd.none )
+
+        DragStartActor actorIndex ->
+            ( { model | control = ActorControl ActorDragged actorIndex }
+            , Cmd.none
+            )
+
+        LeaveControl ->
+            ( { model | control = NoControl }
+            , Cmd.none
+            )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 type Msg
     = -- Actor messages
-      PushActor
+      PushActor Int
     | UpdateActorName Int String
     | ShowActorDropDown Int
     | OpenActorInput Int
-    | DragStartActor Int Int
-    | DragEndActor Int Int
-    | DragEnterActor Int Int
     | FocusActorInput (Result Dom.Error ())
+    | DragStartActor Int
+    | DragEndActor Int
+    | DragEnterActor Int
       -- Requirement messages
-    | PushRequirement Int
+    | PushRequirement Int Int
     | UpdateRequirementContent Int Int String
     | ShowRequirementDropDown Int Int
     | OpenRequirementInput Int Int
+    | FocusRequirementInput (Result Dom.Error ())
     | DeleteRequirement Int Int
     | DragStartRequirement Int Int
     | DragEndRequirement Int Int
     | DragEnterRequirement Int Int
-    | FocusRequirementInput (Result Dom.Error ())
+      -- Requirement messages
+    | LeaveControl
 
 
 type alias Model =
