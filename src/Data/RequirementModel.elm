@@ -4,6 +4,7 @@ module Data.RequirementModel exposing
     , dropInRequirement
     , dropOffRequirement
     , empty
+    , initialize
     , pushActor
     , pushPlaceHolderActor
     , pushPlaceHolderRequirement
@@ -22,13 +23,12 @@ module Data.RequirementModel exposing
     , updateRequirementContent
     )
 
-import Array exposing (toIndexedList)
-import Data.Actor exposing (Actor)
+import Data.Actor as Actor exposing (Actor)
 import Data.ActorList as ActorList exposing (ActorList)
 import Data.ActorRequirementList as ActorRequirementList exposing (ActorRequirementList, empty)
 import Data.Requirement exposing (Requirement)
 import Data.RequirementList as RequirementList exposing (RequirementList)
-import Json.Decode exposing (maybe)
+import Dict exposing (Dict)
 
 
 type RequirementModel
@@ -49,6 +49,15 @@ empty =
         { actorRequirements = ActorRequirementList.empty
         , placeHolderActors = ActorList.empty
         , placeHolderRequirements = RequirementList.empty
+        }
+
+
+initialize : Dict String (List String) -> List String -> List String -> RequirementModel
+initialize dict placeHolderActorNames placeHolderRequirementContents =
+    RequirementModel
+        { actorRequirements = ActorRequirementList.fromDict dict
+        , placeHolderActors = ActorList.fromListOfNames placeHolderActorNames
+        , placeHolderRequirements = RequirementList.fromListOfContents placeHolderRequirementContents
         }
 
 

@@ -1,8 +1,13 @@
-module Data.Actor exposing (Actor, name, rename)
+module Data.Actor exposing (Actor, create, name, rename)
 
 
 type Actor
     = Actor String
+
+
+create : String -> Actor
+create actorName =
+    Actor actorName
 
 
 rename : String -> Actor -> Actor

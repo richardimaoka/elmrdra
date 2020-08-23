@@ -10536,18 +10536,111 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Data$RequirementModel$RequirementModel = function (a) {
+	return {$: 'RequirementModel', a: a};
+};
+var $author$project$Data$ActorRequirementList$ActorRequirementList = function (a) {
+	return {$: 'ActorRequirementList', a: a};
+};
+var $author$project$Data$Actor$Actor = function (a) {
+	return {$: 'Actor', a: a};
+};
+var $author$project$Data$Actor$create = function (actorName) {
+	return $author$project$Data$Actor$Actor(actorName);
+};
+var $author$project$Data$RequirementList$RequirementList = function (a) {
+	return {$: 'RequirementList', a: a};
+};
+var $author$project$Data$Requirement$Requirement = function (a) {
+	return {$: 'Requirement', a: a};
+};
+var $author$project$Data$Requirement$create = function (contentStr) {
+	return $author$project$Data$Requirement$Requirement(contentStr);
+};
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
+var $author$project$Data$RequirementList$fromListOfContents = function (list) {
+	return $author$project$Data$RequirementList$RequirementList(
+		A2(
+			$elm$core$Array$map,
+			$author$project$Data$Requirement$create,
+			$elm$core$Array$fromList(list)));
+};
+var $author$project$Data$ActorRequirementList$fromDict = function (actorNamesAndRequirements) {
+	return $author$project$Data$ActorRequirementList$ActorRequirementList(
+		A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (actorName, requirementContents, array) {
+					return A2(
+						$elm$core$Array$push,
+						{
+							actor: $author$project$Data$Actor$create(actorName),
+							requirements: $author$project$Data$RequirementList$fromListOfContents(requirementContents)
+						},
+						array);
+				}),
+			$elm$core$Array$empty,
+			actorNamesAndRequirements));
+};
+var $author$project$Data$ActorList$ActorList = function (a) {
+	return {$: 'ActorList', a: a};
+};
+var $author$project$Data$ActorList$fromListOfNames = function (list) {
+	return $author$project$Data$ActorList$ActorList(
+		A2(
+			$elm$core$Array$map,
+			$author$project$Data$Actor$create,
+			$elm$core$Array$fromList(list)));
+};
+var $author$project$Data$RequirementModel$initialize = F3(
+	function (dict, placeHolderActorNames, placeHolderRequirementContents) {
+		return $author$project$Data$RequirementModel$RequirementModel(
+			{
+				actorRequirements: $author$project$Data$ActorRequirementList$fromDict(dict),
+				placeHolderActors: $author$project$Data$ActorList$fromListOfNames(placeHolderActorNames),
+				placeHolderRequirements: $author$project$Data$RequirementList$fromListOfContents(placeHolderRequirementContents)
+			});
+	});
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{
-			actors: $elm$core$Array$fromList(
+		A3(
+			$author$project$Data$RequirementModel$initialize,
+			$elm$core$Dict$fromList(
 				_List_fromArray(
-					['hi', 'ya', 'all'])),
-			explanation: '',
-			externalSystems: $elm$core$Array$fromList(
-				_List_fromArray(
-					['hi-system', 'ya-system', 'all-system', 'splutta'])),
-			purpose: ''
-		},
+					[
+						_Utils_Tuple2(
+						'actor1',
+						_List_fromArray(
+							['req1', 'req2']))
+					])),
+			_List_fromArray(
+				['aaa']),
+			_List_fromArray(
+				['bbb'])),
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -10556,196 +10649,13 @@ var $author$project$Main$update = F2(
 	function (_v0, model) {
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
-var $elm$core$Array$toIndexedList = function (array) {
-	var len = array.a;
-	var helper = F2(
-		function (entry, _v0) {
-			var index = _v0.a;
-			var list = _v0.b;
-			return _Utils_Tuple2(
-				index - 1,
-				A2(
-					$elm$core$List$cons,
-					_Utils_Tuple2(index, entry),
-					list));
-		});
-	return A3(
-		$elm$core$Array$foldr,
-		helper,
-		_Utils_Tuple2(len - 1, _List_Nil),
-		array).b;
-};
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $author$project$Main$viewActorSvg = A2(
-	$elm$svg$Svg$svg,
-	_List_fromArray(
-		[
-			$elm$svg$Svg$Attributes$width('50'),
-			$elm$svg$Svg$Attributes$height('50'),
-			$elm$svg$Svg$Attributes$viewBox('0 0 50 50')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$svg$Svg$circle,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$cx('25'),
-					$elm$svg$Svg$Attributes$cy('25'),
-					$elm$svg$Svg$Attributes$r('25')
-				]),
-			_List_Nil)
-		]));
-var $author$project$Main$viewStaticActorName = F2(
-	function (_v0, actor) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text(actor)
-				]));
-	});
-var $author$project$Main$viewActor = F2(
-	function (index, actor) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$author$project$Main$viewActorSvg,
-					A2($author$project$Main$viewStaticActorName, index, actor)
-				]));
-	});
-var $author$project$Main$viewExplanation = function (explanation) {
-	var classes = _List_fromArray(
-		[
-			$elm$html$Html$Attributes$class('p-1'),
-			$elm$html$Html$Attributes$class('h-20')
-		]);
-	return $elm$core$String$isEmpty(explanation) ? A2(
-		$elm$html$Html$div,
-		A2(
-			$elm$core$List$cons,
-			A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
-			classes),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('please click here to fill in the explanation')
-			])) : A2(
-		$elm$html$Html$div,
-		classes,
-		_List_fromArray(
-			[
-				$elm$html$Html$text(explanation)
-			]));
-};
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$Main$viewExternalSystemSvg = A2(
-	$elm$svg$Svg$svg,
-	_List_fromArray(
-		[
-			$elm$svg$Svg$Attributes$width('50'),
-			$elm$svg$Svg$Attributes$height('50'),
-			$elm$svg$Svg$Attributes$viewBox('0 0 50 50')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$svg$Svg$rect,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$x('0'),
-					$elm$svg$Svg$Attributes$y('0'),
-					$elm$svg$Svg$Attributes$width('50'),
-					$elm$svg$Svg$Attributes$height('50')
-				]),
-			_List_Nil)
-		]));
-var $author$project$Main$viewStaticExternalSystemName = F2(
-	function (_v0, externalSystem) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text(externalSystem)
-				]));
-	});
-var $author$project$Main$viewExternalSystem = F2(
-	function (index, externalSystem) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$author$project$Main$viewExternalSystemSvg,
-					A2($author$project$Main$viewStaticExternalSystemName, index, externalSystem)
-				]));
-	});
-var $author$project$Main$viewPurpose = function (purpose) {
-	var classes = _List_fromArray(
-		[
-			$elm$html$Html$Attributes$class('p-1'),
-			$elm$html$Html$Attributes$class('h-16')
-		]);
-	return $elm$core$String$isEmpty(purpose) ? A2(
-		$elm$html$Html$div,
-		A2(
-			$elm$core$List$cons,
-			A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
-			classes),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('please click here to fill in the purpose')
-			])) : A2(
-		$elm$html$Html$div,
-		classes,
-		_List_fromArray(
-			[
-				$elm$html$Html$text(purpose)
-			]));
-};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Main$viewPurpose(model.purpose),
-				$author$project$Main$viewExplanation(model.explanation),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				A2(
-					$elm$core$List$map,
-					function (_v0) {
-						var index = _v0.a;
-						var actor = _v0.b;
-						return A2($author$project$Main$viewActor, index, actor);
-					},
-					$elm$core$Array$toIndexedList(model.actors))),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				A2(
-					$elm$core$List$map,
-					function (_v1) {
-						var index = _v1.a;
-						var externalSystem = _v1.b;
-						return A2($author$project$Main$viewExternalSystem, index, externalSystem);
-					},
-					$elm$core$Array$toIndexedList(model.externalSystems)))
+				$elm$html$Html$text('balloonn')
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(

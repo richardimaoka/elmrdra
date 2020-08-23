@@ -1,6 +1,7 @@
 module Data.ActorRequirementList exposing
     ( ActorRequirementList
     , empty
+    , fromDict
     , getRequirement
     , getRequirementsForActor
     , insertActor
@@ -20,6 +21,7 @@ import Data.Actor as Actor exposing (Actor)
 import Data.ArrayExtend as ArrayExtend
 import Data.Requirement exposing (Requirement)
 import Data.RequirementList as RequirementList exposing (RequirementList)
+import Dict exposing (Dict)
 
 
 type ActorRequirementList
@@ -34,6 +36,17 @@ type ActorRequirementList
 empty : ActorRequirementList
 empty =
     ActorRequirementList Array.empty
+
+
+fromDict : Dict String (List String) -> ActorRequirementList
+fromDict actorNamesAndRequirements =
+    ActorRequirementList <|
+        Dict.foldl
+            (\actorName requirementContents array ->
+                Array.push { actor = Actor.create actorName, requirements = RequirementList.fromListOfContents requirementContents } array
+            )
+            Array.empty
+            actorNamesAndRequirements
 
 
 

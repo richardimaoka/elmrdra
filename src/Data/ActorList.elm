@@ -1,6 +1,7 @@
 module Data.ActorList exposing
     ( ActorList
     , empty
+    , fromListOfNames
     , get
     , insert
     , push
@@ -21,6 +22,11 @@ type ActorList
 empty : ActorList
 empty =
     ActorList Array.empty
+
+
+fromListOfNames : List String -> ActorList
+fromListOfNames list =
+    ActorList <| (Array.fromList list |> Array.map Actor.create)
 
 
 internalUpdate : (Array Actor -> Array Actor) -> ActorList -> ActorList

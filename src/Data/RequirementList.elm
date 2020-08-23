@@ -2,6 +2,7 @@ module Data.RequirementList exposing
     ( RequirementList
     , append
     , empty
+    , fromListOfContents
     , get
     , insert
     , push
@@ -29,6 +30,11 @@ get index list =
     case list of
         RequirementList array ->
             Array.get index array
+
+
+fromListOfContents : List String -> RequirementList
+fromListOfContents list =
+    RequirementList <| (Array.fromList list |> Array.map Requirement.create)
 
 
 internalUpdate : (Array Requirement -> Array Requirement) -> RequirementList -> RequirementList
