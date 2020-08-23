@@ -10536,6 +10536,7 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Main$NoControl = {$: 'NoControl'};
 var $author$project$Data$RequirementModel$RequirementModel = function (a) {
 	return {$: 'RequirementModel', a: a};
 };
@@ -10627,30 +10628,33 @@ var $author$project$Data$RequirementModel$initialize = F3(
 	});
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		A3(
-			$author$project$Data$RequirementModel$initialize,
-			$elm$core$Dict$fromList(
+		{
+			control: $author$project$Main$NoControl,
+			requirementModel: A3(
+				$author$project$Data$RequirementModel$initialize,
+				$elm$core$Dict$fromList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'actor1',
+							_List_fromArray(
+								['req1', 'req2'])),
+							_Utils_Tuple2(
+							'actor2',
+							_List_fromArray(
+								['req1', 'req2']))
+						])),
 				_List_fromArray(
-					[
-						_Utils_Tuple2(
-						'actor1',
-						_List_fromArray(
-							['req1', 'req2'])),
-						_Utils_Tuple2(
-						'actor2',
-						_List_fromArray(
-							['req1', 'req2']))
-					])),
-			_List_fromArray(
-				['aaa']),
-			_List_fromArray(
-				['bbb'])),
+					['aaa']),
+				_List_fromArray(
+					['bbb']))
+		},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$update = F2(
-	function (_v0, model) {
+	function (msg, model) {
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
 var $author$project$Data$Requirement$text = function (_v0) {
@@ -10685,6 +10689,17 @@ var $author$project$Data$RequirementModel$getActorRequirements = function (model
 	var record = model.a;
 	return $author$project$Data$ActorRequirementList$getArray(record.actorRequirements);
 };
+var $author$project$Main$buttonAddActorRequirement = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('bg-gray-400'),
+			$elm$html$Html$Attributes$class('p-1')
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('add actor')
+		]));
 var $elm$core$Array$toIndexedList = function (array) {
 	var len = array.a;
 	var helper = F2(
@@ -10703,6 +10718,32 @@ var $elm$core$Array$toIndexedList = function (array) {
 		helper,
 		_Utils_Tuple2(len - 1, _List_Nil),
 		array).b;
+};
+var $author$project$Main$getActorControl = function (control) {
+	switch (control.$) {
+		case 'RequirementControl':
+			return $elm$core$Maybe$Nothing;
+		case 'ActorControl':
+			var actorControl = control.a;
+			var selectIndex = control.b;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(actorControl, selectIndex));
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Main$getRequirementControl = function (control) {
+	switch (control.$) {
+		case 'RequirementControl':
+			var requirementControl = control.a;
+			var selectIndexTuple = control.b;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(requirementControl, selectIndexTuple));
+		case 'ActorControl':
+			return $elm$core$Maybe$Nothing;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
 };
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
@@ -10743,8 +10784,8 @@ var $author$project$Main$viewStaticActorName = F2(
 					$elm$html$Html$text(actorName)
 				]));
 	});
-var $author$project$Main$viewActor = F2(
-	function (actorIndex, actorName) {
+var $author$project$Main$viewActor = F3(
+	function (actorIndex, maybeControl, actorName) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10756,11 +10797,44 @@ var $author$project$Main$viewActor = F2(
 			_List_fromArray(
 				[
 					$author$project$Main$viewActorSvg,
-					A2($author$project$Main$viewStaticActorName, actorIndex, actorName)
+					function () {
+					if (maybeControl.$ === 'Nothing') {
+						return A2($author$project$Main$viewStaticActorName, actorIndex, actorName);
+					} else {
+						var _v1 = maybeControl.a;
+						var actorControl = _v1.a;
+						var selectIndex = _v1.b;
+						if (_Utils_eq(actorIndex, selectIndex)) {
+							switch (actorControl.$) {
+								case 'ActorDropDown':
+									return A2($author$project$Main$viewStaticActorName, actorIndex, actorName);
+								case 'ActorInput':
+									return A2($author$project$Main$viewStaticActorName, actorIndex, actorName);
+								default:
+									return A2($author$project$Main$viewStaticActorName, actorIndex, actorName);
+							}
+						} else {
+							return A2($author$project$Main$viewStaticActorName, actorIndex, actorName);
+						}
+					}
+				}()
 				]));
 	});
-var $author$project$Main$viewRequirement = F2(
-	function (_v0, requirementContent) {
+var $author$project$Main$buttonAddRequirement = function (actorIndex) {
+	return A2(
+		$elm$html$Html$button,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('bg-gray-400'),
+				$elm$html$Html$Attributes$class('p-1')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('add requirement')
+			]));
+};
+var $author$project$Main$viewRequirement = F3(
+	function (_v0, maybeControl, requirementContent) {
 		var actorIndex = _v0.a;
 		var requirementIndex = _v0.b;
 		return A2(
@@ -10771,11 +10845,33 @@ var $author$project$Main$viewRequirement = F2(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(requirementContent)
+					function () {
+					if (maybeControl.$ === 'Nothing') {
+						return $elm$html$Html$text(requirementContent);
+					} else {
+						var _v2 = maybeControl.a;
+						var actorControl = _v2.a;
+						var _v3 = _v2.b;
+						var selectActorIndex = _v3.a;
+						var selectRequirementIndex = _v3.b;
+						if (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) {
+							switch (actorControl.$) {
+								case 'RequirementDropDown':
+									return $elm$html$Html$text(requirementContent);
+								case 'RequirementInput':
+									return $elm$html$Html$text(requirementContent);
+								default:
+									return $elm$html$Html$text(requirementContent);
+							}
+						} else {
+							return $elm$html$Html$text(requirementContent);
+						}
+					}
+				}()
 				]));
 	});
-var $author$project$Main$viewRequirementList = F2(
-	function (actorIndex, requirements) {
+var $author$project$Main$viewRequirementList = F3(
+	function (actorIndex, maybeControl, requirements) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10785,54 +10881,68 @@ var $author$project$Main$viewRequirementList = F2(
 					A2($elm$html$Html$Attributes$style, 'max-width', '400px')
 				]),
 			A2(
-				$elm$core$List$map,
-				function (_v0) {
-					var requirementIndex = _v0.a;
-					var requirementContent = _v0.b;
-					return A2(
-						$author$project$Main$viewRequirement,
-						_Utils_Tuple2(actorIndex, requirementIndex),
-						requirementContent);
-				},
-				$elm$core$Array$toIndexedList(requirements)));
+				$elm$core$List$append,
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var requirementIndex = _v0.a;
+						var requirementContent = _v0.b;
+						return A3(
+							$author$project$Main$viewRequirement,
+							_Utils_Tuple2(actorIndex, requirementIndex),
+							maybeControl,
+							requirementContent);
+					},
+					$elm$core$Array$toIndexedList(requirements)),
+				_List_fromArray(
+					[
+						$author$project$Main$buttonAddRequirement(actorIndex)
+					])));
 	});
-var $author$project$Main$viewActorRequirementBox = F3(
-	function (actorIndex, actorName, requirements) {
+var $author$project$Main$viewActorRequirementBox = F4(
+	function (actorIndex, actorName, requirements, control) {
+		var maybeRequirementControl = $author$project$Main$getRequirementControl(control);
+		var maybeActorControl = $author$project$Main$getActorControl(control);
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A2($author$project$Main$viewActor, actorIndex, actorName),
-					A2($author$project$Main$viewRequirementList, actorIndex, requirements)
+					A3($author$project$Main$viewActor, actorIndex, maybeActorControl, actorName),
+					A3($author$project$Main$viewRequirementList, actorIndex, maybeRequirementControl, requirements)
 				]));
 	});
-var $author$project$Main$viewActorRequirementPanel = function (array) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'max-width', '600px')
-			]),
-		A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var actorIndex = _v0.a;
-				var _v1 = _v0.b;
-				var actorName = _v1.a;
-				var requirements = _v1.b;
-				return A3($author$project$Main$viewActorRequirementBox, actorIndex, actorName, requirements);
-			},
-			$elm$core$Array$toIndexedList(array)));
-};
+var $author$project$Main$viewActorRequirementPanel = F2(
+	function (actorRequirements, control) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'max-width', '600px')
+				]),
+			A2(
+				$elm$core$List$append,
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var actorIndex = _v0.a;
+						var _v1 = _v0.b;
+						var actorName = _v1.a;
+						var requirements = _v1.b;
+						return A4($author$project$Main$viewActorRequirementBox, actorIndex, actorName, requirements, control);
+					},
+					$elm$core$Array$toIndexedList(actorRequirements)),
+				_List_fromArray(
+					[$author$project$Main$buttonAddActorRequirement])));
+	});
 var $author$project$Main$view = function (model) {
+	var actorRequirements = $author$project$Data$RequirementModel$getActorRequirements(model.requirementModel);
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Main$viewActorRequirementPanel(
-				$author$project$Data$RequirementModel$getActorRequirements(model))
+				A2($author$project$Main$viewActorRequirementPanel, actorRequirements, model.control)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
@@ -10845,4 +10955,4 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"PushActor":[],"UpdateActorName":["Basics.Int","String.String"],"ShowActorDropDown":["Basics.Int"],"OpenActorInput":["Basics.Int"],"DragStartActor":["Basics.Int","Basics.Int"],"DragEndActor":["Basics.Int","Basics.Int"],"DragEnterActor":["Basics.Int","Basics.Int"],"FocusActorInput":["Result.Result Browser.Dom.Error ()"],"PushRequirement":["Basics.Int"],"UpdateRequirementContent":["Basics.Int","Basics.Int","String.String"],"ShowRequirementDropDown":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"DeleteRequirement":["Basics.Int","Basics.Int"],"DragStartRequirement":["Basics.Int","Basics.Int"],"DragEndRequirement":["Basics.Int","Basics.Int"],"DragEnterRequirement":["Basics.Int","Basics.Int"],"FocusRequirementInput":["Result.Result Browser.Dom.Error ()"]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
