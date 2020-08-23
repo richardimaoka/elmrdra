@@ -10653,12 +10653,14 @@ var $author$project$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Main$ActorControl = F2(
-	function (a, b) {
-		return {$: 'ActorControl', a: a, b: b};
-	});
-var $author$project$Main$ActorDragged = {$: 'ActorDragged'};
+var $author$project$Main$ActorDragged = function (a) {
+	return {$: 'ActorDragged', a: a};
+};
 var $author$project$Main$ActorDropDown = {$: 'ActorDropDown'};
+var $author$project$Main$ActorEditState = F2(
+	function (a, b) {
+		return {$: 'ActorEditState', a: a, b: b};
+	});
 var $author$project$Main$ActorInput = {$: 'ActorInput'};
 var $author$project$Main$FocusActorInput = function (a) {
 	return {$: 'FocusActorInput', a: a};
@@ -10817,7 +10819,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							control: A2($author$project$Main$ActorControl, $author$project$Main$ActorInput, newActorIndex),
+							control: A2($author$project$Main$ActorEditState, $author$project$Main$ActorInput, newActorIndex),
 							requirementModel: A2(
 								$author$project$Data$RequirementModel$pushActor,
 								$author$project$Data$Actor$create(''),
@@ -10844,7 +10846,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							control: A2($author$project$Main$ActorControl, $author$project$Main$ActorDropDown, actorIndex)
+							control: A2($author$project$Main$ActorEditState, $author$project$Main$ActorDropDown, actorIndex)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'OpenActorInput':
@@ -10853,7 +10855,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							control: A2($author$project$Main$ActorControl, $author$project$Main$ActorInput, actorIndex)
+							control: A2($author$project$Main$ActorEditState, $author$project$Main$ActorInput, actorIndex)
 						}),
 					A2(
 						$elm$core$Task$attempt,
@@ -10868,7 +10870,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							control: A2($author$project$Main$ActorControl, $author$project$Main$ActorDragged, actorIndex)
+							control: $author$project$Main$ActorDragged(actorIndex)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'LeaveControl':
@@ -10953,16 +10955,32 @@ var $elm$core$Array$toIndexedList = function (array) {
 var $author$project$Main$DragStartActor = function (a) {
 	return {$: 'DragStartActor', a: a};
 };
+var $author$project$Main$LeaveControl = {$: 'LeaveControl'};
 var $elm$html$Html$Attributes$draggable = _VirtualDom_attribute('draggable');
-var $author$project$Main$getActorControl = function (control) {
+var $author$project$Main$getActorDragged = function (control) {
 	switch (control.$) {
 		case 'RequirementControl':
 			return $elm$core$Maybe$Nothing;
-		case 'ActorControl':
-			var actorControl = control.a;
+		case 'ActorEditState':
+			return $elm$core$Maybe$Nothing;
+		case 'ActorDragged':
+			var index = control.a;
+			return $elm$core$Maybe$Just(index);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Main$getActorEditState = function (control) {
+	switch (control.$) {
+		case 'RequirementControl':
+			return $elm$core$Maybe$Nothing;
+		case 'ActorEditState':
+			var actorEditState = control.a;
 			var selectIndex = control.b;
 			return $elm$core$Maybe$Just(
-				_Utils_Tuple2(actorControl, selectIndex));
+				_Utils_Tuple2(actorEditState, selectIndex));
+		case 'ActorDragged':
+			return $elm$core$Maybe$Nothing;
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -10974,11 +10992,19 @@ var $author$project$Main$getRequirementControl = function (control) {
 			var selectIndexTuple = control.b;
 			return $elm$core$Maybe$Just(
 				_Utils_Tuple2(requirementControl, selectIndexTuple));
-		case 'ActorControl':
+		case 'ActorEditState':
+			return $elm$core$Maybe$Nothing;
+		case 'ActorDragged':
 			return $elm$core$Maybe$Nothing;
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
+};
+var $author$project$Main$onDragEnd = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'dragend',
+		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Main$onDragStart = function (msg) {
 	return A2(
@@ -11044,7 +11070,6 @@ var $author$project$Main$viewActorDropdown = F2(
 						]))
 				]));
 	});
-var $author$project$Main$LeaveControl = {$: 'LeaveControl'};
 var $author$project$Main$UpdateActorName = F2(
 	function (a, b) {
 		return {$: 'UpdateActorName', a: a, b: b};
@@ -11131,25 +11156,6 @@ var $author$project$Main$viewActorSvg = A2(
 				]),
 			_List_Nil)
 		]));
-var $author$project$Main$viewStaticActorNameFaded = F2(
-	function (actorIndex, actorName) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'min-height', '16px'),
-					A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
-					$elm$html$Html$Attributes$class('p-1'),
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$ShowActorDropDown(actorIndex)),
-					$elm$html$Html$Events$onDoubleClick(
-					$author$project$Main$OpenActorInput(actorIndex))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(actorName)
-				]));
-	});
 var $author$project$Main$viewActor = F3(
 	function (actorIndex, maybeControl, actorName) {
 		return A2(
@@ -11168,16 +11174,13 @@ var $author$project$Main$viewActor = F3(
 						return A2($author$project$Main$viewStaticActorName, actorIndex, actorName);
 					} else {
 						var _v1 = maybeControl.a;
-						var actorControl = _v1.a;
+						var actorEditState = _v1.a;
 						var selectIndex = _v1.b;
 						if (_Utils_eq(actorIndex, selectIndex)) {
-							switch (actorControl.$) {
-								case 'ActorDropDown':
-									return A2($author$project$Main$viewActorDropdown, actorIndex, actorName);
-								case 'ActorInput':
-									return A2($author$project$Main$viewActorNameInput, actorIndex, actorName);
-								default:
-									return A2($author$project$Main$viewStaticActorNameFaded, actorIndex, actorName);
+							if (actorEditState.$ === 'ActorDropDown') {
+								return A2($author$project$Main$viewActorDropdown, actorIndex, actorName);
+							} else {
+								return A2($author$project$Main$viewActorNameInput, actorIndex, actorName);
 							}
 						} else {
 							return A2($author$project$Main$viewStaticActorName, actorIndex, actorName);
@@ -11217,12 +11220,12 @@ var $author$project$Main$viewRequirement = F3(
 						return $elm$html$Html$text(requirementContent);
 					} else {
 						var _v2 = maybeControl.a;
-						var actorControl = _v2.a;
+						var actorEditState = _v2.a;
 						var _v3 = _v2.b;
 						var selectActorIndex = _v3.a;
 						var selectRequirementIndex = _v3.b;
 						if (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) {
-							switch (actorControl.$) {
+							switch (actorEditState.$) {
 								case 'RequirementDropDown':
 									return $elm$html$Html$text(requirementContent);
 								case 'RequirementInput':
@@ -11268,19 +11271,30 @@ var $author$project$Main$viewRequirementList = F3(
 	});
 var $author$project$Main$viewEachActorRequirement = F4(
 	function (actorIndex, actorName, requirements, control) {
+		var opacity = function () {
+			var _v0 = $author$project$Main$getActorDragged(control);
+			if (_v0.$ === 'Nothing') {
+				return '1.0';
+			} else {
+				var selectIndex = _v0.a;
+				return _Utils_eq(actorIndex, selectIndex) ? '0.5' : '1.0';
+			}
+		}();
 		var maybeRequirementControl = $author$project$Main$getRequirementControl(control);
-		var maybeActorControl = $author$project$Main$getActorControl(control);
+		var maybeActorEditState = $author$project$Main$getActorEditState(control);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$draggable('true'),
+					A2($elm$html$Html$Attributes$style, 'opacity', opacity),
 					$author$project$Main$onDragStart(
-					$author$project$Main$DragStartActor(actorIndex))
+					$author$project$Main$DragStartActor(actorIndex)),
+					$author$project$Main$onDragEnd($author$project$Main$LeaveControl)
 				]),
 			_List_fromArray(
 				[
-					A3($author$project$Main$viewActor, actorIndex, maybeActorControl, actorName),
+					A3($author$project$Main$viewActor, actorIndex, maybeActorEditState, actorName),
 					A3($author$project$Main$viewRequirementList, actorIndex, maybeRequirementControl, requirements)
 				]));
 	});

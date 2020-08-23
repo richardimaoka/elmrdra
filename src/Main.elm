@@ -63,69 +63,36 @@ buttonAddActorRequirement newActorIndex =
 viewEachActorRequirement : Int -> String -> RequirementArray -> ModelControl -> Html Msg
 viewEachActorRequirement actorIndex actorName requirements control =
     let
-        maybeActorControl =
-            getActorControl control
+        opacity =
+            case getActorDragged control of
+                Nothing ->
+                    "1.0"
+
+                Just selectIndex ->
+                    if actorIndex == selectIndex then
+                        "0.5"
+
+                    else
+                        "1.0"
+
+        maybeActorEditState =
+            getActorEditState control
 
         maybeRequirementControl =
             getRequirementControl control
     in
     div
         [ draggable "true"
+        , style "opacity" opacity
         , onDragStart <| DragStartActor actorIndex
+        , onDragEnd LeaveControl
         ]
-        [ viewActor actorIndex maybeActorControl actorName
+        [ viewActor actorIndex maybeActorEditState actorName
         , viewRequirementList actorIndex maybeRequirementControl requirements
         ]
 
 
-viewEachActorRequirementFaded : Int -> String -> RequirementArray -> Html Msg
-viewEachActorRequirementFaded actorIndex actorName requirements =
-    div
-        [ style "opacity" "0.5"
-        , onDragEnd <| DragEndActor actorIndex
-        ]
-        [ viewActor1 actorIndex actorName
-        , viewRequirementList actorIndex Nothing requirements
-        ]
-
-
-viewActor1 : Int -> String -> Html Msg
-viewActor1 actorIndex actorName =
-    div
-        [ class "m-4"
-        , class "p-4"
-        , style "max-width" "200px"
-        ]
-        [ viewActorSvg
-        , viewStaticActorName actorIndex actorName
-        ]
-
-
-viewActor2 : Int -> String -> Html Msg
-viewActor2 actorIndex actorName =
-    div
-        [ class "m-4"
-        , class "p-4"
-        , style "max-width" "200px"
-        ]
-        [ viewActorSvg
-        , viewActorNameInput actorIndex actorName
-        ]
-
-
-viewActor3 : Int -> String -> Html Msg
-viewActor3 actorIndex actorName =
-    div
-        [ class "m-4"
-        , class "p-4"
-        , style "max-width" "200px"
-        ]
-        [ viewActorSvg
-        , viewActorDropdown actorIndex actorName
-        ]
-
-
-viewActor : Int -> Maybe ( ActorControl, Int ) -> String -> Html Msg
+viewActor : Int -> Maybe ( ActorEditState, Int ) -> String -> Html Msg
 viewActor actorIndex maybeControl actorName =
     div
         [ class "m-4"
@@ -137,17 +104,14 @@ viewActor actorIndex maybeControl actorName =
             Nothing ->
                 viewStaticActorName actorIndex actorName
 
-            Just ( actorControl, selectIndex ) ->
+            Just ( actorEditState, selectIndex ) ->
                 if actorIndex == selectIndex then
-                    case actorControl of
+                    case actorEditState of
                         ActorDropDown ->
                             viewActorDropdown actorIndex actorName
 
                         ActorInput ->
                             viewActorNameInput actorIndex actorName
-
-                        ActorDragged ->
-                            viewStaticActorNameFaded actorIndex actorName
 
                 else
                     viewStaticActorName actorIndex actorName
@@ -165,18 +129,6 @@ viewStaticActorName : Int -> String -> Html Msg
 viewStaticActorName actorIndex actorName =
     div
         [ style "min-height" "16px"
-        , class "p-1"
-        , onClick <| ShowActorDropDown actorIndex
-        , onDoubleClick <| OpenActorInput actorIndex
-        ]
-        [ text <| actorName ]
-
-
-viewStaticActorNameFaded : Int -> String -> Html Msg
-viewStaticActorNameFaded actorIndex actorName =
-    div
-        [ style "min-height" "16px"
-        , style "opacity" "0.5"
         , class "p-1"
         , onClick <| ShowActorDropDown actorIndex
         , onDoubleClick <| OpenActorInput actorIndex
@@ -252,9 +204,9 @@ viewRequirement ( actorIndex, requirementIndex ) maybeControl requirementContent
             Nothing ->
                 text requirementContent
 
-            Just ( actorControl, ( selectActorIndex, selectRequirementIndex ) ) ->
+            Just ( actorEditState, ( selectActorIndex, selectRequirementIndex ) ) ->
                 if actorIndex == selectActorIndex && requirementIndex == selectRequirementIndex then
-                    case actorControl of
+                    case actorEditState of
                         RequirementDropDown ->
                             text requirementContent
 
@@ -329,7 +281,7 @@ update msg model =
         PushActor newActorIndex ->
             ( { model
                 | requirementModel = RequirementModel.pushActor (Actor.create "") model.requirementModel
-                , control = ActorControl ActorInput newActorIndex
+                , control = ActorEditState ActorInput newActorIndex
               }
             , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId newActorIndex)
             )
@@ -340,12 +292,12 @@ update msg model =
             )
 
         ShowActorDropDown actorIndex ->
-            ( { model | control = ActorControl ActorDropDown actorIndex }
+            ( { model | control = ActorEditState ActorDropDown actorIndex }
             , Cmd.none
             )
 
         OpenActorInput actorIndex ->
-            ( { model | control = ActorControl ActorInput actorIndex }
+            ( { model | control = ActorEditState ActorInput actorIndex }
             , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId actorIndex)
             )
 
@@ -353,7 +305,7 @@ update msg model =
             ( model, Cmd.none )
 
         DragStartActor actorIndex ->
-            ( { model | control = ActorControl ActorDragged actorIndex }
+            ( { model | control = ActorDragged actorIndex }
             , Cmd.none
             )
 
@@ -408,20 +360,61 @@ type alias RequirementArray =
     Array String
 
 
+
+-- control of UI
+
+
+{-| ModelControl: only one of them is possible at a time
+-}
 type ModelControl
     = RequirementControl RequirementControl ( Int, Int )
-    | ActorControl ActorControl Int
+    | ActorEditState ActorEditState Int
+    | ActorDragged Int
     | NoControl
 
 
-getActorControl : ModelControl -> Maybe ( ActorControl, Int )
-getActorControl control =
+type RequirementControl
+    = RequirementDropDown
+    | RequirementInput
+    | RequirementDragged
+
+
+type ActorEditState
+    = ActorDropDown
+    | ActorInput
+
+
+{-| getActorDragged, getActorEditState, getRequirementControl:
+three utility functions to convert ModelControl to fin-grained Maybe.
+Only one of the three functions may return Just at a time.
+-}
+getActorDragged : ModelControl -> Maybe Int
+getActorDragged control =
     case control of
         RequirementControl _ _ ->
             Nothing
 
-        ActorControl actorControl selectIndex ->
-            Just ( actorControl, selectIndex )
+        ActorEditState _ _ ->
+            Nothing
+
+        ActorDragged index ->
+            Just index
+
+        NoControl ->
+            Nothing
+
+
+getActorEditState : ModelControl -> Maybe ( ActorEditState, Int )
+getActorEditState control =
+    case control of
+        RequirementControl _ _ ->
+            Nothing
+
+        ActorEditState actorEditState selectIndex ->
+            Just ( actorEditState, selectIndex )
+
+        ActorDragged _ ->
+            Nothing
 
         NoControl ->
             Nothing
@@ -433,20 +426,11 @@ getRequirementControl control =
         RequirementControl requirementControl selectIndexTuple ->
             Just ( requirementControl, selectIndexTuple )
 
-        ActorControl _ _ ->
+        ActorEditState _ _ ->
+            Nothing
+
+        ActorDragged _ ->
             Nothing
 
         NoControl ->
             Nothing
-
-
-type RequirementControl
-    = RequirementDropDown
-    | RequirementInput
-    | RequirementDragged
-
-
-type ActorControl
-    = ActorDropDown
-    | ActorInput
-    | ActorDragged
