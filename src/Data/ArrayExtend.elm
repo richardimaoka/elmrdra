@@ -1,6 +1,16 @@
-module Data.ArrayExtend exposing (insert, remove, sort)
+module Data.ArrayExtend exposing (insert, remove, sort, update)
 
 import Array exposing (Array)
+
+
+update : Int -> (a -> a) -> Array a -> Array a
+update index updater array =
+    Maybe.withDefault
+        array
+        (Array.get index array
+            |> Maybe.map (\elem -> updater elem)
+            |> Maybe.map (\updatedElem -> Array.set index updatedElem array)
+        )
 
 
 insert : Int -> a -> Array a -> Array a

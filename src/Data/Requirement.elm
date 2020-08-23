@@ -1,12 +1,12 @@
-module Data.Requirement exposing (Requirement, text, update)
+module Data.Requirement exposing (Requirement, text, updateContent)
 
 
 type Requirement
     = Requirement String
 
 
-update : String -> Requirement -> Requirement
-update str _ =
+updateContent : String -> Requirement -> Requirement
+updateContent str _ =
     Requirement str
 
 

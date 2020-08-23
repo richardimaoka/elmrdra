@@ -1,7 +1,23 @@
-module Data.ActorRequirementList exposing (ActorRequirementList, insert, push, remove, set, sort)
+module Data.ActorRequirementList exposing
+    ( ActorRequirementList
+    , empty
+    , getRequirement
+    , getRequirementsForActor
+    , insertActor
+    , insertRequirement
+    , pushActor
+    , pushRequirement
+    , removeActor
+    , removeRequirement
+    , renameActor
+    , sortActor
+    , sortRequirements
+    , updateRequirementContent
+    )
 
 import Array exposing (Array)
-import Data.Actor exposing (Actor)
+import Data.Actor as Actor exposing (Actor)
+import Data.ArrayExtend as ArrayExtend
 import Data.Requirement exposing (Requirement)
 import Data.RequirementList as RequirementList exposing (RequirementList)
 
@@ -15,8 +31,69 @@ type ActorRequirementList
         )
 
 
-internalUpdate : Int -> (RequirementList -> RequirementList) -> ActorRequirementList -> ActorRequirementList
-internalUpdate actorIndex updator (ActorRequirementList array) =
+empty : ActorRequirementList
+empty =
+    ActorRequirementList Array.empty
+
+
+
+-- actor functions
+
+
+renameActor : Int -> String -> ActorRequirementList -> ActorRequirementList
+renameActor index name (ActorRequirementList array) =
+    Maybe.withDefault
+        (ActorRequirementList array)
+        (Array.get index array
+            |> Maybe.map (\record -> { record | actor = Actor.rename name record.actor, requirements = record.requirements })
+            |> Maybe.map (\updatedRecord -> ActorRequirementList <| Array.set index updatedRecord array)
+        )
+
+
+pushActor : Actor -> ActorRequirementList -> ActorRequirementList
+pushActor actor (ActorRequirementList array) =
+    ActorRequirementList <| Array.push { actor = actor, requirements = RequirementList.empty } array
+
+
+insertActor : Int -> Actor -> ActorRequirementList -> ActorRequirementList
+insertActor index actor (ActorRequirementList array) =
+    ActorRequirementList <| ArrayExtend.insert index { actor = actor, requirements = RequirementList.empty } array
+
+
+sortActor : Int -> Int -> ActorRequirementList -> ActorRequirementList
+sortActor fromIndex toIndex (ActorRequirementList array) =
+    ActorRequirementList <| ArrayExtend.sort fromIndex toIndex array
+
+
+removeActor : Int -> ActorRequirementList -> ActorRequirementList
+removeActor index (ActorRequirementList array) =
+    ActorRequirementList <| ArrayExtend.remove index array
+
+
+
+-- requirement functions
+
+
+getRequirementsForActor : Int -> ActorRequirementList -> Maybe RequirementList
+getRequirementsForActor actorIndex list =
+    case list of
+        ActorRequirementList array ->
+            Array.get actorIndex array
+                |> Maybe.map
+                    (\record -> record.requirements)
+
+
+getRequirement : ( Int, Int ) -> ActorRequirementList -> Maybe Requirement
+getRequirement ( actorIndex, requirementIndex ) list =
+    case list of
+        ActorRequirementList array ->
+            Array.get actorIndex array
+                |> Maybe.andThen
+                    (\record -> RequirementList.get requirementIndex record.requirements)
+
+
+internalRequirementUpdate : Int -> (RequirementList -> RequirementList) -> ActorRequirementList -> ActorRequirementList
+internalRequirementUpdate actorIndex listUpdator (ActorRequirementList array) =
     --do not expose this function
     case Array.get actorIndex array of
         Nothing ->
@@ -26,46 +103,46 @@ internalUpdate actorIndex updator (ActorRequirementList array) =
             ActorRequirementList
                 (Array.set
                     actorIndex
-                    { record | requirements = updator record.requirements }
+                    { record | requirements = listUpdator record.requirements }
                     array
                 )
 
 
-set : ( Int, Int ) -> Requirement -> ActorRequirementList -> ActorRequirementList
-set ( actorIndex, requirementIndex ) requirement list =
-    internalUpdate
+updateRequirementContent : ( Int, Int ) -> String -> ActorRequirementList -> ActorRequirementList
+updateRequirementContent ( actorIndex, requirementIndex ) content list =
+    internalRequirementUpdate
         actorIndex
-        (RequirementList.set requirementIndex requirement)
+        (RequirementList.updateContent requirementIndex content)
         list
 
 
-push : Int -> Requirement -> ActorRequirementList -> ActorRequirementList
-push actorIndex requirement list =
-    internalUpdate
+pushRequirement : Int -> Requirement -> ActorRequirementList -> ActorRequirementList
+pushRequirement actorIndex requirement list =
+    internalRequirementUpdate
         actorIndex
         (RequirementList.push requirement)
         list
 
 
-insert : ( Int, Int ) -> Requirement -> ActorRequirementList -> ActorRequirementList
-insert ( actorIndex, requirementIndex ) requirement list =
-    internalUpdate
+insertRequirement : ( Int, Int ) -> Requirement -> ActorRequirementList -> ActorRequirementList
+insertRequirement ( actorIndex, requirementIndex ) requirement list =
+    internalRequirementUpdate
         actorIndex
         (RequirementList.insert requirementIndex requirement)
         list
 
 
-remove : ( Int, Int ) -> ActorRequirementList -> ActorRequirementList
-remove ( actorIndex, requirementIndex ) list =
-    internalUpdate
+removeRequirement : ( Int, Int ) -> ActorRequirementList -> ActorRequirementList
+removeRequirement ( actorIndex, requirementIndex ) list =
+    internalRequirementUpdate
         actorIndex
         (RequirementList.remove requirementIndex)
         list
 
 
-sort : Int -> Int -> Int -> ActorRequirementList -> ActorRequirementList
-sort actorIndex fromRequirementIndex toRequirementIndex list =
-    internalUpdate
+sortRequirements : Int -> Int -> Int -> ActorRequirementList -> ActorRequirementList
+sortRequirements actorIndex fromRequirementIndex toRequirementIndex list =
+    internalRequirementUpdate
         actorIndex
         (RequirementList.sort fromRequirementIndex toRequirementIndex)
         list

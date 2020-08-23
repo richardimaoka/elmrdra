@@ -1,7 +1,16 @@
-module Data.ActorList exposing (ActorList, insert, push, remove, set, sort)
+module Data.ActorList exposing
+    ( ActorList
+    , empty
+    , get
+    , insert
+    , push
+    , remove
+    , rename
+    , sort
+    )
 
 import Array exposing (Array)
-import Data.Actor exposing (Actor)
+import Data.Actor as Actor exposing (Actor)
 import Data.ArrayExtend as ArrayExtend exposing (insert, remove, sort)
 
 
@@ -9,15 +18,27 @@ type ActorList
     = ActorList (Array Actor)
 
 
+empty : ActorList
+empty =
+    ActorList Array.empty
+
+
 internalUpdate : (Array Actor -> Array Actor) -> ActorList -> ActorList
-internalUpdate updator (ActorList array) =
+internalUpdate arrayUpdater (ActorList array) =
     --do not expose this function
-    ActorList (updator array)
+    ActorList (arrayUpdater array)
 
 
-set : Int -> Actor -> ActorList -> ActorList
-set index actor list =
-    internalUpdate (Array.set index actor) list
+get : Int -> ActorList -> Maybe Actor
+get index list =
+    case list of
+        ActorList array ->
+            Array.get index array
+
+
+rename : Int -> String -> ActorList -> ActorList
+rename index name list =
+    internalUpdate (ArrayExtend.update index (Actor.rename name)) list
 
 
 push : Actor -> ActorList -> ActorList

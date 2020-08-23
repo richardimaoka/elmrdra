@@ -1,23 +1,45 @@
-module Data.RequirementList exposing (RequirementList, insert, push, remove, set, sort)
+module Data.RequirementList exposing
+    ( RequirementList
+    , append
+    , empty
+    , get
+    , insert
+    , push
+    , remove
+    , sort
+    , updateContent
+    )
 
 import Array exposing (Array)
 import Data.ArrayExtend as ArrayExtend exposing (insert, remove, sort)
-import Data.Requirement exposing (Requirement)
+import Data.Requirement as Requirement exposing (Requirement)
 
 
 type RequirementList
     = RequirementList (Array Requirement)
 
 
+empty : RequirementList
+empty =
+    RequirementList Array.empty
+
+
+get : Int -> RequirementList -> Maybe Requirement
+get index list =
+    case list of
+        RequirementList array ->
+            Array.get index array
+
+
 internalUpdate : (Array Requirement -> Array Requirement) -> RequirementList -> RequirementList
-internalUpdate updator (RequirementList array) =
+internalUpdate arrayUpdater (RequirementList array) =
     --do not expose this function
-    RequirementList (updator array)
+    RequirementList (arrayUpdater array)
 
 
-set : Int -> Requirement -> RequirementList -> RequirementList
-set index requirement list =
-    internalUpdate (Array.set index requirement) list
+updateContent : Int -> String -> RequirementList -> RequirementList
+updateContent index content list =
+    internalUpdate (ArrayExtend.update index (Requirement.updateContent content)) list
 
 
 push : Requirement -> RequirementList -> RequirementList
@@ -38,3 +60,8 @@ remove index list =
 sort : Int -> Int -> RequirementList -> RequirementList
 sort fromIndex toIndex list =
     internalUpdate (ArrayExtend.sort fromIndex toIndex) list
+
+
+append : RequirementList -> RequirementList -> RequirementList
+append (RequirementList array1) (RequirementList array2) =
+    RequirementList <| Array.append array1 array2
