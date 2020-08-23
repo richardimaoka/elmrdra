@@ -11115,11 +11115,6 @@ var $author$project$Main$DragEnterActor = F2(
 	function (a, b) {
 		return {$: 'DragEnterActor', a: a, b: b};
 	});
-var $author$project$Main$DragStartActor = function (a) {
-	return {$: 'DragStartActor', a: a};
-};
-var $author$project$Main$LeaveControl = {$: 'LeaveControl'};
-var $elm$html$Html$Attributes$draggable = _VirtualDom_attribute('draggable');
 var $author$project$Main$getActorDragged = function (control) {
 	switch (control.$) {
 		case 'RequirementControl':
@@ -11163,16 +11158,21 @@ var $author$project$Main$getRequirementControl = function (control) {
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Main$onDragEnd = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'dragend',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $author$project$Main$onDragEnter = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
 		'dragenter',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Main$DragStartActor = function (a) {
+	return {$: 'DragStartActor', a: a};
+};
+var $author$project$Main$LeaveControl = {$: 'LeaveControl'};
+var $elm$html$Html$Attributes$draggable = _VirtualDom_attribute('draggable');
+var $author$project$Main$onDragEnd = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'dragend',
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Main$onDragStart = function (msg) {
@@ -11334,7 +11334,11 @@ var $author$project$Main$viewActor = F3(
 				[
 					$elm$html$Html$Attributes$class('m-4'),
 					$elm$html$Html$Attributes$class('p-4'),
-					A2($elm$html$Html$Attributes$style, 'max-width', '200px')
+					A2($elm$html$Html$Attributes$style, 'max-width', '200px'),
+					$elm$html$Html$Attributes$draggable('true'),
+					$author$project$Main$onDragStart(
+					$author$project$Main$DragStartActor(actorIndex)),
+					$author$project$Main$onDragEnd($author$project$Main$LeaveControl)
 				]),
 			_List_fromArray(
 				[
@@ -11449,34 +11453,24 @@ var $author$project$Main$viewEachActorRequirement = F4(
 	function (actorIndex, actorName, requirements, control) {
 		var maybeRequirementControl = $author$project$Main$getRequirementControl(control);
 		var maybeActorEditState = $author$project$Main$getActorEditState(control);
-		var defaultAttributes = _List_fromArray(
-			[
-				$elm$html$Html$Attributes$draggable('true'),
-				$author$project$Main$onDragStart(
-				$author$project$Main$DragStartActor(actorIndex)),
-				$author$project$Main$onDragEnd($author$project$Main$LeaveControl)
-			]);
 		var attributes = function () {
 			var _v0 = $author$project$Main$getActorDragged(control);
 			if (_v0.$ === 'Nothing') {
-				return A2(
-					$elm$core$List$cons,
-					A2($elm$html$Html$Attributes$style, 'opacity', '1.0'),
-					defaultAttributes);
+				return _List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'opacity', '1.0')
+					]);
 			} else {
 				var selectIndex = _v0.a;
-				return _Utils_eq(actorIndex, selectIndex) ? A2(
-					$elm$core$List$cons,
-					A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
-					defaultAttributes) : A2(
-					$elm$core$List$append,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$style, 'opacity', '1.0'),
-							$author$project$Main$onDragEnter(
-							A2($author$project$Main$DragEnterActor, selectIndex, actorIndex))
-						]),
-					defaultAttributes);
+				return _Utils_eq(actorIndex, selectIndex) ? _List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'opacity', '0.5')
+					]) : _List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'opacity', '1.0'),
+						$author$project$Main$onDragEnter(
+						A2($author$project$Main$DragEnterActor, selectIndex, actorIndex))
+					]);
 			}
 		}();
 		return A2(

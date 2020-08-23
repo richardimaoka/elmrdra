@@ -63,27 +63,19 @@ buttonAddActorRequirement newActorIndex =
 viewEachActorRequirement : Int -> String -> RequirementArray -> ModelControl -> Html Msg
 viewEachActorRequirement actorIndex actorName requirements control =
     let
-        defaultAttributes =
-            [ draggable "true"
-            , onDragStart <| DragStartActor actorIndex
-            , onDragEnd LeaveControl
-            ]
-
         attributes =
             case getActorDragged control of
                 Nothing ->
-                    style "opacity" "1.0" :: defaultAttributes
+                    [ style "opacity" "1.0" ]
 
                 Just selectIndex ->
                     if actorIndex == selectIndex then
-                        style "opacity" "0.5" :: defaultAttributes
+                        [ style "opacity" "0.5" ]
 
                     else
-                        List.append
-                            [ style "opacity" "1.0"
-                            , onDragEnter <| DragEnterActor selectIndex actorIndex
-                            ]
-                            defaultAttributes
+                        [ style "opacity" "1.0"
+                        , onDragEnter <| DragEnterActor selectIndex actorIndex
+                        ]
 
         maybeActorEditState =
             getActorEditState control
@@ -104,6 +96,9 @@ viewActor actorIndex maybeControl actorName =
         [ class "m-4"
         , class "p-4"
         , style "max-width" "200px"
+        , draggable "true"
+        , onDragStart <| DragStartActor actorIndex
+        , onDragEnd LeaveControl
         ]
         [ viewActorSvg
         , case maybeControl of
