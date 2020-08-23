@@ -10635,6 +10635,10 @@ var $author$project$Main$init = function (_v0) {
 						_Utils_Tuple2(
 						'actor1',
 						_List_fromArray(
+							['req1', 'req2'])),
+						_Utils_Tuple2(
+						'actor2',
+						_List_fromArray(
 							['req1', 'req2']))
 					])),
 			_List_fromArray(
@@ -10649,13 +10653,186 @@ var $author$project$Main$update = F2(
 	function (_v0, model) {
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
+var $author$project$Data$Requirement$text = function (_v0) {
+	var str = _v0.a;
+	return str;
+};
+var $author$project$Data$RequirementList$getArray = function (list) {
+	var array = list.a;
+	return A2(
+		$elm$core$Array$map,
+		function (elem) {
+			return $author$project$Data$Requirement$text(elem);
+		},
+		array);
+};
+var $author$project$Data$Actor$name = function (_v0) {
+	var str = _v0.a;
+	return str;
+};
+var $author$project$Data$ActorRequirementList$getArray = function (list) {
+	var array = list.a;
+	return A2(
+		$elm$core$Array$map,
+		function (elem) {
+			return _Utils_Tuple2(
+				$author$project$Data$Actor$name(elem.actor),
+				$author$project$Data$RequirementList$getArray(elem.requirements));
+		},
+		array);
+};
+var $author$project$Data$RequirementModel$getActorRequirements = function (model) {
+	var record = model.a;
+	return $author$project$Data$ActorRequirementList$getArray(record.actorRequirements);
+};
+var $elm$core$Array$toIndexedList = function (array) {
+	var len = array.a;
+	var helper = F2(
+		function (entry, _v0) {
+			var index = _v0.a;
+			var list = _v0.b;
+			return _Utils_Tuple2(
+				index - 1,
+				A2(
+					$elm$core$List$cons,
+					_Utils_Tuple2(index, entry),
+					list));
+		});
+	return A3(
+		$elm$core$Array$foldr,
+		helper,
+		_Utils_Tuple2(len - 1, _List_Nil),
+		array).b;
+};
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $author$project$Main$viewActorSvg = A2(
+	$elm$svg$Svg$svg,
+	_List_fromArray(
+		[
+			$elm$svg$Svg$Attributes$width('50'),
+			$elm$svg$Svg$Attributes$height('50'),
+			$elm$svg$Svg$Attributes$viewBox('0 0 50 50')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$circle,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$cx('25'),
+					$elm$svg$Svg$Attributes$cy('25'),
+					$elm$svg$Svg$Attributes$r('25')
+				]),
+			_List_Nil)
+		]));
+var $author$project$Main$viewStaticActorName = F2(
+	function (actorIndex, actorName) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text(actorName)
+				]));
+	});
+var $author$project$Main$viewActor = F2(
+	function (actorIndex, actorName) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('m-4'),
+					$elm$html$Html$Attributes$class('p-4'),
+					A2($elm$html$Html$Attributes$style, 'max-width', '200px')
+				]),
+			_List_fromArray(
+				[
+					$author$project$Main$viewActorSvg,
+					A2($author$project$Main$viewStaticActorName, actorIndex, actorName)
+				]));
+	});
+var $author$project$Main$viewRequirement = F2(
+	function (_v0, requirementContent) {
+		var actorIndex = _v0.a;
+		var requirementIndex = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('m-2')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(requirementContent)
+				]));
+	});
+var $author$project$Main$viewRequirementList = F2(
+	function (actorIndex, requirements) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('m-4'),
+					$elm$html$Html$Attributes$class('p-4'),
+					A2($elm$html$Html$Attributes$style, 'max-width', '400px')
+				]),
+			A2(
+				$elm$core$List$map,
+				function (_v0) {
+					var requirementIndex = _v0.a;
+					var requirementContent = _v0.b;
+					return A2(
+						$author$project$Main$viewRequirement,
+						_Utils_Tuple2(actorIndex, requirementIndex),
+						requirementContent);
+				},
+				$elm$core$Array$toIndexedList(requirements)));
+	});
+var $author$project$Main$viewActorRequirementBox = F3(
+	function (actorIndex, actorName, requirements) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2($author$project$Main$viewActor, actorIndex, actorName),
+					A2($author$project$Main$viewRequirementList, actorIndex, requirements)
+				]));
+	});
+var $author$project$Main$viewActorRequirementPanel = function (array) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'max-width', '600px')
+			]),
+		A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var actorIndex = _v0.a;
+				var _v1 = _v0.b;
+				var actorName = _v1.a;
+				var requirements = _v1.b;
+				return A3($author$project$Main$viewActorRequirementBox, actorIndex, actorName, requirements);
+			},
+			$elm$core$Array$toIndexedList(array)));
+};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$elm$html$Html$text('balloonn')
+				$author$project$Main$viewActorRequirementPanel(
+				$author$project$Data$RequirementModel$getActorRequirements(model))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(

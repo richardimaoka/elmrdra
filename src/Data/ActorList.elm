@@ -3,6 +3,7 @@ module Data.ActorList exposing
     , empty
     , fromListOfNames
     , get
+    , getArray
     , insert
     , push
     , remove
@@ -19,6 +20,16 @@ type ActorList
     = ActorList (Array Actor)
 
 
+internalUpdate : (Array Actor -> Array Actor) -> ActorList -> ActorList
+internalUpdate arrayUpdater (ActorList array) =
+    --do not expose this function
+    ActorList (arrayUpdater array)
+
+
+
+-- exposed functions
+
+
 empty : ActorList
 empty =
     ActorList Array.empty
@@ -29,17 +40,18 @@ fromListOfNames list =
     ActorList <| (Array.fromList list |> Array.map Actor.create)
 
 
-internalUpdate : (Array Actor -> Array Actor) -> ActorList -> ActorList
-internalUpdate arrayUpdater (ActorList array) =
-    --do not expose this function
-    ActorList (arrayUpdater array)
-
-
 get : Int -> ActorList -> Maybe Actor
 get index list =
     case list of
         ActorList array ->
             Array.get index array
+
+
+getArray : ActorList -> Array String
+getArray list =
+    case list of
+        ActorList array ->
+            Array.map (\elem -> Actor.name elem) array
 
 
 rename : Int -> String -> ActorList -> ActorList

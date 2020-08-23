@@ -4,6 +4,7 @@ module Data.RequirementList exposing
     , empty
     , fromListOfContents
     , get
+    , getArray
     , insert
     , push
     , remove
@@ -20,6 +21,16 @@ type RequirementList
     = RequirementList (Array Requirement)
 
 
+internalUpdate : (Array Requirement -> Array Requirement) -> RequirementList -> RequirementList
+internalUpdate arrayUpdater (RequirementList array) =
+    --do not expose this function
+    RequirementList (arrayUpdater array)
+
+
+
+-- exposed functions
+
+
 empty : RequirementList
 empty =
     RequirementList Array.empty
@@ -32,15 +43,16 @@ get index list =
             Array.get index array
 
 
+getArray : RequirementList -> Array String
+getArray list =
+    case list of
+        RequirementList array ->
+            Array.map (\elem -> Requirement.text elem) array
+
+
 fromListOfContents : List String -> RequirementList
 fromListOfContents list =
     RequirementList <| (Array.fromList list |> Array.map Requirement.create)
-
-
-internalUpdate : (Array Requirement -> Array Requirement) -> RequirementList -> RequirementList
-internalUpdate arrayUpdater (RequirementList array) =
-    --do not expose this function
-    RequirementList (arrayUpdater array)
 
 
 updateContent : Int -> String -> RequirementList -> RequirementList

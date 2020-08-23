@@ -4,6 +4,7 @@ module Data.RequirementModel exposing
     , dropInRequirement
     , dropOffRequirement
     , empty
+    , getActorRequirements
     , initialize
     , pushActor
     , pushPlaceHolderActor
@@ -23,7 +24,8 @@ module Data.RequirementModel exposing
     , updateRequirementContent
     )
 
-import Data.Actor as Actor exposing (Actor)
+import Array exposing (Array)
+import Data.Actor exposing (Actor)
 import Data.ActorList as ActorList exposing (ActorList)
 import Data.ActorRequirementList as ActorRequirementList exposing (ActorRequirementList, empty)
 import Data.Requirement exposing (Requirement)
@@ -43,6 +45,25 @@ type alias Record =
     }
 
 
+internalWrapper : (Record -> Record) -> RequirementModel -> RequirementModel
+internalWrapper generator model =
+    -- do not expose this
+    case model of
+        RequirementModel record ->
+            RequirementModel <| generator record
+
+
+getActorRequirements : RequirementModel -> Array ( String, Array String )
+getActorRequirements model =
+    case model of
+        RequirementModel record ->
+            ActorRequirementList.getArray record.actorRequirements
+
+
+
+-- exposed functions
+
+
 empty : RequirementModel
 empty =
     RequirementModel
@@ -59,14 +80,6 @@ initialize dict placeHolderActorNames placeHolderRequirementContents =
         , placeHolderActors = ActorList.fromListOfNames placeHolderActorNames
         , placeHolderRequirements = RequirementList.fromListOfContents placeHolderRequirementContents
         }
-
-
-internalWrapper : (Record -> Record) -> RequirementModel -> RequirementModel
-internalWrapper generator model =
-    -- do not expose this
-    case model of
-        RequirementModel record ->
-            RequirementModel <| generator record
 
 
 

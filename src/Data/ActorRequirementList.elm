@@ -2,6 +2,7 @@ module Data.ActorRequirementList exposing
     ( ActorRequirementList
     , empty
     , fromDict
+    , getArray
     , getRequirement
     , getRequirementsForActor
     , insertActor
@@ -33,6 +34,26 @@ type ActorRequirementList
         )
 
 
+internalRequirementUpdate : Int -> (RequirementList -> RequirementList) -> ActorRequirementList -> ActorRequirementList
+internalRequirementUpdate actorIndex listUpdator (ActorRequirementList array) =
+    --do not expose this function
+    case Array.get actorIndex array of
+        Nothing ->
+            ActorRequirementList array
+
+        Just record ->
+            ActorRequirementList
+                (Array.set
+                    actorIndex
+                    { record | requirements = listUpdator record.requirements }
+                    array
+                )
+
+
+
+-- exposed functions
+
+
 empty : ActorRequirementList
 empty =
     ActorRequirementList Array.empty
@@ -47,6 +68,13 @@ fromDict actorNamesAndRequirements =
             )
             Array.empty
             actorNamesAndRequirements
+
+
+getArray : ActorRequirementList -> Array ( String, Array String )
+getArray list =
+    case list of
+        ActorRequirementList array ->
+            Array.map (\elem -> ( Actor.name elem.actor, RequirementList.getArray elem.requirements )) array
 
 
 
@@ -103,22 +131,6 @@ getRequirement ( actorIndex, requirementIndex ) list =
             Array.get actorIndex array
                 |> Maybe.andThen
                     (\record -> RequirementList.get requirementIndex record.requirements)
-
-
-internalRequirementUpdate : Int -> (RequirementList -> RequirementList) -> ActorRequirementList -> ActorRequirementList
-internalRequirementUpdate actorIndex listUpdator (ActorRequirementList array) =
-    --do not expose this function
-    case Array.get actorIndex array of
-        Nothing ->
-            ActorRequirementList array
-
-        Just record ->
-            ActorRequirementList
-                (Array.set
-                    actorIndex
-                    { record | requirements = listUpdator record.requirements }
-                    array
-                )
 
 
 updateRequirementContent : ( Int, Int ) -> String -> ActorRequirementList -> ActorRequirementList
