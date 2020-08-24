@@ -10642,7 +10642,12 @@ var $author$project$Main$init = function (_v0) {
 							_Utils_Tuple2(
 							'actor2',
 							_List_fromArray(
-								['req2-1', 'req2-2']))
+								['req2-1', 'req2-2'])),
+							_Utils_Tuple2(
+							'actor3',
+							_List_fromArray(
+								['req3-1', 'req3-2', 'req3-3'])),
+							_Utils_Tuple2('actor4', _List_Nil)
 						])),
 				_List_fromArray(
 					['aaa']),
@@ -10665,6 +10670,16 @@ var $author$project$Main$ActorInput = {$: 'ActorInput'};
 var $author$project$Main$FocusActorInput = function (a) {
 	return {$: 'FocusActorInput', a: a};
 };
+var $author$project$Main$FocusRequirementInput = function (a) {
+	return {$: 'FocusRequirementInput', a: a};
+};
+var $author$project$Main$RequirementControl = F2(
+	function (a, b) {
+		return {$: 'RequirementControl', a: a, b: b};
+	});
+var $author$project$Main$RequirementDragged = {$: 'RequirementDragged'};
+var $author$project$Main$RequirementDropDown = {$: 'RequirementDropDown'};
+var $author$project$Main$RequirementInput = {$: 'RequirementInput'};
 var $author$project$Main$actorInputTagId = function (actorIndex) {
 	return 'input-actor-' + $elm$core$String$fromInt(actorIndex);
 };
@@ -10717,20 +10732,6 @@ var $author$project$Data$RequirementModel$pushActor = F2(
 			},
 			model);
 	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Data$Actor$rename = F2(
-	function (str, _v0) {
-		return $author$project$Data$Actor$Actor(str);
-	});
 var $elm$core$Array$setHelp = F4(
 	function (shift, index, value, tree) {
 		var pos = $elm$core$Array$bitMask & (index >>> shift);
@@ -10773,39 +10774,56 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
-var $author$project$Data$ActorRequirementList$renameActor = F3(
-	function (index, name, _v0) {
+var $author$project$Data$ActorRequirementList$internalRequirementUpdate = F3(
+	function (actorIndex, listUpdator, _v0) {
 		var array = _v0.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Data$ActorRequirementList$ActorRequirementList(array),
-			A2(
-				$elm$core$Maybe$map,
-				function (updatedRecord) {
-					return $author$project$Data$ActorRequirementList$ActorRequirementList(
-						A3($elm$core$Array$set, index, updatedRecord, array));
-				},
-				A2(
-					$elm$core$Maybe$map,
-					function (record) {
-						return _Utils_update(
-							record,
-							{
-								actor: A2($author$project$Data$Actor$rename, name, record.actor),
-								requirements: record.requirements
-							});
-					},
-					A2($elm$core$Array$get, index, array))));
+		var _v1 = A2($elm$core$Array$get, actorIndex, array);
+		if (_v1.$ === 'Nothing') {
+			return $author$project$Data$ActorRequirementList$ActorRequirementList(array);
+		} else {
+			var record = _v1.a;
+			return $author$project$Data$ActorRequirementList$ActorRequirementList(
+				A3(
+					$elm$core$Array$set,
+					actorIndex,
+					_Utils_update(
+						record,
+						{
+							requirements: listUpdator(record.requirements)
+						}),
+					array));
+		}
 	});
-var $author$project$Data$RequirementModel$renameActor = F3(
-	function (index, name, model) {
+var $author$project$Data$RequirementList$internalUpdate = F2(
+	function (arrayUpdater, _v0) {
+		var array = _v0.a;
+		return $author$project$Data$RequirementList$RequirementList(
+			arrayUpdater(array));
+	});
+var $author$project$Data$RequirementList$push = F2(
+	function (requirement, list) {
+		return A2(
+			$author$project$Data$RequirementList$internalUpdate,
+			$elm$core$Array$push(requirement),
+			list);
+	});
+var $author$project$Data$ActorRequirementList$pushRequirement = F3(
+	function (actorIndex, requirement, list) {
+		return A3(
+			$author$project$Data$ActorRequirementList$internalRequirementUpdate,
+			actorIndex,
+			$author$project$Data$RequirementList$push(requirement),
+			list);
+	});
+var $author$project$Data$RequirementModel$pushRequirement = F3(
+	function (actorIndex, requirement, model) {
 		return A2(
 			$author$project$Data$RequirementModel$internalWrapper,
 			function (record) {
 				return _Utils_update(
 					record,
 					{
-						actorRequirements: A3($author$project$Data$ActorRequirementList$renameActor, index, name, record.actorRequirements)
+						actorRequirements: A3($author$project$Data$ActorRequirementList$pushRequirement, actorIndex, requirement, record.actorRequirements)
 					});
 			},
 			model);
@@ -10890,6 +10908,112 @@ var $elm$core$Array$append = F2(
 						bTree)));
 		}
 	});
+var $author$project$Data$ArrayExtend$remove = F2(
+	function (index, array) {
+		if ((index < 0) || (_Utils_cmp(
+			$elm$core$Array$length(array),
+			index) < 1)) {
+			return array;
+		} else {
+			var upper = A3($elm$core$Array$slice, 0, index, array);
+			var lower = A3(
+				$elm$core$Array$slice,
+				index + 1,
+				$elm$core$Array$length(array),
+				array);
+			return A2($elm$core$Array$append, upper, lower);
+		}
+	});
+var $author$project$Data$RequirementList$remove = F2(
+	function (index, list) {
+		return A2(
+			$author$project$Data$RequirementList$internalUpdate,
+			$author$project$Data$ArrayExtend$remove(index),
+			list);
+	});
+var $author$project$Data$ActorRequirementList$removeRequirement = F2(
+	function (_v0, list) {
+		var actorIndex = _v0.a;
+		var requirementIndex = _v0.b;
+		return A3(
+			$author$project$Data$ActorRequirementList$internalRequirementUpdate,
+			actorIndex,
+			$author$project$Data$RequirementList$remove(requirementIndex),
+			list);
+	});
+var $author$project$Data$RequirementModel$removeRequirement = F2(
+	function (_v0, model) {
+		var actorIndex = _v0.a;
+		var requirementIndex = _v0.b;
+		return A2(
+			$author$project$Data$RequirementModel$internalWrapper,
+			function (record) {
+				return _Utils_update(
+					record,
+					{
+						actorRequirements: A2(
+							$author$project$Data$ActorRequirementList$removeRequirement,
+							_Utils_Tuple2(actorIndex, requirementIndex),
+							record.actorRequirements)
+					});
+			},
+			model);
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Data$Actor$rename = F2(
+	function (str, _v0) {
+		return $author$project$Data$Actor$Actor(str);
+	});
+var $author$project$Data$ActorRequirementList$renameActor = F3(
+	function (index, name, _v0) {
+		var array = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Data$ActorRequirementList$ActorRequirementList(array),
+			A2(
+				$elm$core$Maybe$map,
+				function (updatedRecord) {
+					return $author$project$Data$ActorRequirementList$ActorRequirementList(
+						A3($elm$core$Array$set, index, updatedRecord, array));
+				},
+				A2(
+					$elm$core$Maybe$map,
+					function (record) {
+						return _Utils_update(
+							record,
+							{
+								actor: A2($author$project$Data$Actor$rename, name, record.actor),
+								requirements: record.requirements
+							});
+					},
+					A2($elm$core$Array$get, index, array))));
+	});
+var $author$project$Data$RequirementModel$renameActor = F3(
+	function (index, name, model) {
+		return A2(
+			$author$project$Data$RequirementModel$internalWrapper,
+			function (record) {
+				return _Utils_update(
+					record,
+					{
+						actorRequirements: A3($author$project$Data$ActorRequirementList$renameActor, index, name, record.actorRequirements)
+					});
+			},
+			model);
+	});
+var $author$project$Main$requirementInputTagId = F2(
+	function (actorIndex, requirementIndex) {
+		return 'input-requirement-' + ($elm$core$String$fromInt(actorIndex) + ('-' + $elm$core$String$fromInt(requirementIndex)));
+	});
 var $author$project$Data$ArrayExtend$insert = F3(
 	function (index, element, array) {
 		if ((index < 0) || (_Utils_cmp(
@@ -10907,22 +11031,6 @@ var $author$project$Data$ArrayExtend$insert = F3(
 				$elm$core$Array$append,
 				A2($elm$core$Array$push, element, upper),
 				lower);
-		}
-	});
-var $author$project$Data$ArrayExtend$remove = F2(
-	function (index, array) {
-		if ((index < 0) || (_Utils_cmp(
-			$elm$core$Array$length(array),
-			index) < 1)) {
-			return array;
-		} else {
-			var upper = A3($elm$core$Array$slice, 0, index, array);
-			var lower = A3(
-				$elm$core$Array$slice,
-				index + 1,
-				$elm$core$Array$length(array),
-				array);
-			return A2($elm$core$Array$append, upper, lower);
 		}
 	});
 var $author$project$Data$ArrayExtend$sort = F3(
@@ -10954,6 +11062,94 @@ var $author$project$Data$RequirementModel$sortActor = F3(
 					record,
 					{
 						actorRequirements: A3($author$project$Data$ActorRequirementList$sortActor, fromIndex, toIndex, record.actorRequirements)
+					});
+			},
+			model);
+	});
+var $author$project$Data$RequirementList$sort = F3(
+	function (fromIndex, toIndex, list) {
+		return A2(
+			$author$project$Data$RequirementList$internalUpdate,
+			A2($author$project$Data$ArrayExtend$sort, fromIndex, toIndex),
+			list);
+	});
+var $author$project$Data$ActorRequirementList$sortRequirements = F4(
+	function (actorIndex, fromRequirementIndex, toRequirementIndex, list) {
+		return A3(
+			$author$project$Data$ActorRequirementList$internalRequirementUpdate,
+			actorIndex,
+			A2($author$project$Data$RequirementList$sort, fromRequirementIndex, toRequirementIndex),
+			list);
+	});
+var $author$project$Data$RequirementModel$sortRequirement = F4(
+	function (actorIndex, fromRequirementIndex, toRequirementIndex, model) {
+		return A2(
+			$author$project$Data$RequirementModel$internalWrapper,
+			function (record) {
+				return _Utils_update(
+					record,
+					{
+						actorRequirements: A4($author$project$Data$ActorRequirementList$sortRequirements, actorIndex, fromRequirementIndex, toRequirementIndex, record.actorRequirements)
+					});
+			},
+			model);
+	});
+var $author$project$Data$ArrayExtend$update = F3(
+	function (index, updater, array) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			array,
+			A2(
+				$elm$core$Maybe$map,
+				function (updatedElem) {
+					return A3($elm$core$Array$set, index, updatedElem, array);
+				},
+				A2(
+					$elm$core$Maybe$map,
+					function (elem) {
+						return updater(elem);
+					},
+					A2($elm$core$Array$get, index, array))));
+	});
+var $author$project$Data$Requirement$updateContent = F2(
+	function (str, _v0) {
+		return $author$project$Data$Requirement$Requirement(str);
+	});
+var $author$project$Data$RequirementList$updateContent = F3(
+	function (index, content, list) {
+		return A2(
+			$author$project$Data$RequirementList$internalUpdate,
+			A2(
+				$author$project$Data$ArrayExtend$update,
+				index,
+				$author$project$Data$Requirement$updateContent(content)),
+			list);
+	});
+var $author$project$Data$ActorRequirementList$updateRequirementContent = F3(
+	function (_v0, content, list) {
+		var actorIndex = _v0.a;
+		var requirementIndex = _v0.b;
+		return A3(
+			$author$project$Data$ActorRequirementList$internalRequirementUpdate,
+			actorIndex,
+			A2($author$project$Data$RequirementList$updateContent, requirementIndex, content),
+			list);
+	});
+var $author$project$Data$RequirementModel$updateRequirementContent = F3(
+	function (_v0, content, model) {
+		var actorIndex = _v0.a;
+		var requirementIndex = _v0.b;
+		return A2(
+			$author$project$Data$RequirementModel$internalWrapper,
+			function (record) {
+				return _Utils_update(
+					record,
+					{
+						actorRequirements: A3(
+							$author$project$Data$ActorRequirementList$updateRequirementContent,
+							_Utils_Tuple2(actorIndex, requirementIndex),
+							content,
+							record.actorRequirements)
 					});
 			},
 			model);
@@ -11032,14 +11228,123 @@ var $author$project$Main$update = F2(
 							requirementModel: A3($author$project$Data$RequirementModel$sortActor, fromActorIndex, toActorIndex, model.requirementModel)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'LeaveControl':
+			case 'PushRequirement':
+				var actorIndex = msg.a;
+				var newRequirementIndex = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							control: A2(
+								$author$project$Main$RequirementControl,
+								$author$project$Main$RequirementInput,
+								_Utils_Tuple2(actorIndex, newRequirementIndex)),
+							requirementModel: A3(
+								$author$project$Data$RequirementModel$pushRequirement,
+								actorIndex,
+								$author$project$Data$Requirement$create(''),
+								model.requirementModel)
+						}),
+					A2(
+						$elm$core$Task$attempt,
+						$author$project$Main$FocusRequirementInput,
+						$elm$browser$Browser$Dom$focus(
+							A2($author$project$Main$requirementInputTagId, actorIndex, newRequirementIndex))));
+			case 'UpdateRequirementContent':
+				var actorIndex = msg.a;
+				var requirementIndex = msg.b;
+				var newContent = msg.c;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							requirementModel: A3(
+								$author$project$Data$RequirementModel$updateRequirementContent,
+								_Utils_Tuple2(actorIndex, requirementIndex),
+								newContent,
+								model.requirementModel)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'ShowRequirementDropDown':
+				var actorIndex = msg.a;
+				var requirementIndex = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							control: A2(
+								$author$project$Main$RequirementControl,
+								$author$project$Main$RequirementDropDown,
+								_Utils_Tuple2(actorIndex, requirementIndex))
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'OpenRequirementInput':
+				var actorIndex = msg.a;
+				var requirementIndex = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							control: A2(
+								$author$project$Main$RequirementControl,
+								$author$project$Main$RequirementInput,
+								_Utils_Tuple2(actorIndex, requirementIndex))
+						}),
+					A2(
+						$elm$core$Task$attempt,
+						$author$project$Main$FocusRequirementInput,
+						$elm$browser$Browser$Dom$focus(
+							A2($author$project$Main$requirementInputTagId, actorIndex, requirementIndex))));
+			case 'FocusRequirementInput':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'RemoveRequirement':
+				var actorIndex = msg.a;
+				var requirementIndex = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							control: $author$project$Main$NoControl,
+							requirementModel: A2(
+								$author$project$Data$RequirementModel$removeRequirement,
+								_Utils_Tuple2(actorIndex, requirementIndex),
+								model.requirementModel)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'DragStartRequirement':
+				var actorIndex = msg.a;
+				var requirementIndex = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							control: A2(
+								$author$project$Main$RequirementControl,
+								$author$project$Main$RequirementDragged,
+								_Utils_Tuple2(actorIndex, requirementIndex))
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'DragEnterRequirement':
+				var actorIndex = msg.a;
+				var fromRequirementIndex = msg.b;
+				var toRequirementIndex = msg.c;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							control: A2(
+								$author$project$Main$RequirementControl,
+								$author$project$Main$RequirementDragged,
+								_Utils_Tuple2(actorIndex, toRequirementIndex)),
+							requirementModel: A4($author$project$Data$RequirementModel$sortRequirement, actorIndex, fromRequirementIndex, toRequirementIndex, model.requirementModel)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{control: $author$project$Main$NoControl}),
 					$elm$core$Platform$Cmd$none);
-			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Data$Requirement$text = function (_v0) {
@@ -11265,18 +11570,13 @@ var $elm$html$Html$Events$preventDefaultOn = F2(
 	});
 var $author$project$Main$onEnter = function (msg) {
 	var isEnter = function (code) {
-		return (code === 13) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$fail('not ENTER');
-	};
-	var alwaysPreventDefault = function (code) {
-		return _Utils_Tuple2(code, true);
+		return (code === 13) ? $elm$json$Json$Decode$succeed(
+			_Utils_Tuple2(msg, true)) : $elm$json$Json$Decode$fail('not ENTER');
 	};
 	return A2(
 		$elm$html$Html$Events$preventDefaultOn,
 		'keydown',
-		A2(
-			$elm$json$Json$Decode$map,
-			alwaysPreventDefault,
-			A2($elm$json$Json$Decode$andThen, isEnter, $elm$html$Html$Events$keyCode)));
+		A2($elm$json$Json$Decode$andThen, isEnter, $elm$html$Html$Events$keyCode));
 };
 var $author$project$Main$viewActorNameInput = F2(
 	function (actorIndex, actorName) {
@@ -11363,62 +11663,140 @@ var $author$project$Main$viewActor = F3(
 				}()
 				]));
 	});
-var $author$project$Main$buttonAddRequirement = function (actorIndex) {
-	return A2(
-		$elm$html$Html$button,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('bg-gray-400'),
-				$elm$html$Html$Attributes$class('p-1')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('add requirement')
-			]));
-};
-var $author$project$Main$DragStartRequirement = F2(
+var $author$project$Main$PushRequirement = F2(
 	function (a, b) {
-		return {$: 'DragStartRequirement', a: a, b: b};
+		return {$: 'PushRequirement', a: a, b: b};
+	});
+var $author$project$Main$buttonAddRequirement = F2(
+	function (actorIndex, newRequirementIndex) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('bg-gray-400'),
+					$elm$html$Html$Attributes$class('p-1'),
+					$elm$html$Html$Events$onClick(
+					A2($author$project$Main$PushRequirement, actorIndex, newRequirementIndex))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('add requirement')
+				]));
+	});
+var $author$project$Main$UpdateRequirementContent = F3(
+	function (a, b, c) {
+		return {$: 'UpdateRequirementContent', a: a, b: b, c: c};
+	});
+var $author$project$Main$viewRequirementContentInput = F3(
+	function (actorIndex, requirementIndex, requirementContent) {
+		return A2(
+			$elm$html$Html$input,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$id(
+					A2($author$project$Main$requirementInputTagId, actorIndex, requirementIndex)),
+					A2($elm$html$Html$Attributes$style, 'max-width', '160px'),
+					A2($elm$html$Html$Attributes$style, 'min-height', '24px'),
+					$elm$html$Html$Attributes$class('border-2'),
+					$elm$html$Html$Attributes$class('p-1'),
+					$elm$html$Html$Attributes$value(requirementContent),
+					$elm$html$Html$Events$onBlur($author$project$Main$LeaveControl),
+					$author$project$Main$onEnter($author$project$Main$LeaveControl),
+					$elm$html$Html$Events$onInput(
+					A2($author$project$Main$UpdateRequirementContent, actorIndex, requirementIndex))
+				]),
+			_List_Nil);
+	});
+var $author$project$Main$OpenRequirementInput = F2(
+	function (a, b) {
+		return {$: 'OpenRequirementInput', a: a, b: b};
+	});
+var $author$project$Main$RemoveRequirement = F2(
+	function (a, b) {
+		return {$: 'RemoveRequirement', a: a, b: b};
+	});
+var $author$project$Main$ShowRequirementDropDown = F2(
+	function (a, b) {
+		return {$: 'ShowRequirementDropDown', a: a, b: b};
+	});
+var $author$project$Main$viewStaticRequirementContent = F4(
+	function (actorIndex, requirementIndex, opacity, requirementContent) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'min-height', '24px'),
+					A2($elm$html$Html$Attributes$style, 'opacity', opacity),
+					$elm$html$Html$Attributes$class('m-2'),
+					$elm$html$Html$Attributes$class('p-1'),
+					$elm$html$Html$Attributes$draggable('true'),
+					$elm$html$Html$Events$onClick(
+					A2($author$project$Main$ShowRequirementDropDown, actorIndex, requirementIndex)),
+					$elm$html$Html$Events$onDoubleClick(
+					A2($author$project$Main$OpenRequirementInput, actorIndex, requirementIndex))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(requirementContent)
+				]));
+	});
+var $author$project$Main$viewRequirementDropdown = F3(
+	function (actorIndex, requirementIndex, requirementContent) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A4($author$project$Main$viewStaticRequirementContent, actorIndex, requirementIndex, '1.0', requirementContent),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							A2($author$project$Main$OpenRequirementInput, actorIndex, requirementIndex))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('edit')
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							A2($author$project$Main$RemoveRequirement, actorIndex, requirementIndex))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('remove')
+						]))
+				]));
 	});
 var $author$project$Main$viewRequirement = F3(
 	function (_v0, maybeControl, requirementContent) {
 		var actorIndex = _v0.a;
 		var requirementIndex = _v0.b;
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('m-2'),
-					$elm$html$Html$Attributes$draggable('true'),
-					$author$project$Main$onDragStart(
-					A2($author$project$Main$DragStartRequirement, actorIndex, requirementIndex))
-				]),
-			_List_fromArray(
-				[
-					function () {
-					if (maybeControl.$ === 'Nothing') {
-						return $elm$html$Html$text(requirementContent);
-					} else {
-						var _v2 = maybeControl.a;
-						var actorEditState = _v2.a;
-						var _v3 = _v2.b;
-						var selectActorIndex = _v3.a;
-						var selectRequirementIndex = _v3.b;
-						if (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) {
-							switch (actorEditState.$) {
-								case 'RequirementDropDown':
-									return $elm$html$Html$text(requirementContent);
-								case 'RequirementInput':
-									return $elm$html$Html$text(requirementContent);
-								default:
-									return $elm$html$Html$text(requirementContent);
-							}
-						} else {
-							return $elm$html$Html$text(requirementContent);
-						}
-					}
-				}()
-				]));
+		if (maybeControl.$ === 'Nothing') {
+			return A4($author$project$Main$viewStaticRequirementContent, actorIndex, requirementIndex, '1.0', requirementContent);
+		} else {
+			var _v2 = maybeControl.a;
+			var requirementControl = _v2.a;
+			var _v3 = _v2.b;
+			var selectActorIndex = _v3.a;
+			var selectRequirementIndex = _v3.b;
+			if (_Utils_eq(actorIndex, selectActorIndex) && _Utils_eq(requirementIndex, selectRequirementIndex)) {
+				switch (requirementControl.$) {
+					case 'RequirementDropDown':
+						return A3($author$project$Main$viewRequirementDropdown, actorIndex, requirementIndex, requirementContent);
+					case 'RequirementInput':
+						return A3($author$project$Main$viewRequirementContentInput, actorIndex, requirementIndex, requirementContent);
+					default:
+						return A4($author$project$Main$viewStaticRequirementContent, actorIndex, requirementIndex, '0.5', requirementContent);
+				}
+			} else {
+				return A4($author$project$Main$viewStaticRequirementContent, actorIndex, requirementIndex, '1.0', requirementContent);
+			}
+		}
 	});
 var $author$project$Main$viewRequirementList = F3(
 	function (actorIndex, maybeControl, requirements) {
@@ -11446,7 +11824,10 @@ var $author$project$Main$viewRequirementList = F3(
 					$elm$core$Array$toIndexedList(requirements)),
 				_List_fromArray(
 					[
-						$author$project$Main$buttonAddRequirement(actorIndex)
+						A2(
+						$author$project$Main$buttonAddRequirement,
+						actorIndex,
+						$elm$core$Array$length(requirements))
 					])));
 	});
 var $author$project$Main$viewEachActorRequirement = F4(
@@ -11528,4 +11909,4 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"PushActor":["Basics.Int"],"UpdateActorName":["Basics.Int","String.String"],"ShowActorDropDown":["Basics.Int"],"OpenActorInput":["Basics.Int"],"FocusActorInput":["Result.Result Browser.Dom.Error ()"],"DragStartActor":["Basics.Int"],"DragEnterActor":["Basics.Int","Basics.Int"],"PushRequirement":["Basics.Int","Basics.Int"],"UpdateRequirementContent":["Basics.Int","Basics.Int","String.String"],"ShowRequirementDropDown":["Basics.Int","Basics.Int"],"OpenRequirementInput":["Basics.Int","Basics.Int"],"FocusRequirementInput":["Result.Result Browser.Dom.Error ()"],"DeleteRequirement":["Basics.Int","Basics.Int"],"DragStartRequirement":["Basics.Int","Basics.Int"],"DragEndRequirement":["Basics.Int","Basics.Int"],"DragEnterRequirement":["Basics.Int","Basics.Int"],"LeaveControl":[]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.ActorIndex":{"args":[],"type":"Basics.Int"},"Main.FromIndex":{"args":[],"type":"Basics.Int"},"Main.RequirementIndex":{"args":[],"type":"Basics.Int"},"Main.ToIndex":{"args":[],"type":"Basics.Int"}},"unions":{"Main.Msg":{"args":[],"tags":{"PushActor":["Main.ActorIndex"],"UpdateActorName":["Main.ActorIndex","String.String"],"ShowActorDropDown":["Main.ActorIndex"],"OpenActorInput":["Main.ActorIndex"],"FocusActorInput":["Result.Result Browser.Dom.Error ()"],"DragStartActor":["Main.FromIndex"],"DragEnterActor":["Main.FromIndex","Main.ToIndex"],"PushRequirement":["Main.ActorIndex","Main.RequirementIndex"],"UpdateRequirementContent":["Main.ActorIndex","Main.RequirementIndex","String.String"],"ShowRequirementDropDown":["Main.ActorIndex","Main.RequirementIndex"],"OpenRequirementInput":["Main.ActorIndex","Main.RequirementIndex"],"FocusRequirementInput":["Result.Result Browser.Dom.Error ()"],"RemoveRequirement":["Main.ActorIndex","Main.RequirementIndex"],"DragStartRequirement":["Main.ActorIndex","Main.FromIndex"],"DragEnterRequirement":["Main.ActorIndex","Main.FromIndex","Main.ToIndex"],"LeaveControl":[]}},"Browser.Dom.Error":{"args":[],"tags":{"NotFound":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});}(this));
