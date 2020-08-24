@@ -6,7 +6,10 @@ module Data.SystemContextModel exposing
     , dropOffExternalSystem
     , empty
     , getActors
+    , getExplanation
     , getExternalSystems
+    , getPurpose
+    , getSystemName
     , getUnboundActors
     , getUnboundExternalSystems
     , initialize
@@ -64,6 +67,27 @@ internalWrapper generator model =
 
 
 -- exposed functions
+
+
+getPurpose : SystemContextModel -> String
+getPurpose model =
+    case model of
+        SystemContextModel record ->
+            record.purpose
+
+
+getExplanation : SystemContextModel -> String
+getExplanation model =
+    case model of
+        SystemContextModel record ->
+            record.explanation
+
+
+getSystemName : SystemContextModel -> String
+getSystemName model =
+    case model of
+        SystemContextModel record ->
+            record.systemName
 
 
 getActors : SystemContextModel -> Array String

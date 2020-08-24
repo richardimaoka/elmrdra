@@ -3,9 +3,18 @@ module Main exposing (main)
 import Array exposing (Array)
 import Browser exposing (element)
 import Browser.Dom as Dom
-import Data.Actor as Actor exposing (create)
-import Data.Requirement as Requirement exposing (create)
-import Data.RequirementModel as RequirementModel exposing (RequirementModel, getActorRequirements, initialize)
+import Data.SystemContextModel as SystemContextModel
+    exposing
+        ( SystemContextModel
+        , getActors
+        , getExplanation
+        , getExternalSystems
+        , getPurpose
+        , getSystemName
+        , getUnboundActors
+        , getUnboundExternalSystems
+        , initialize
+        )
 import Dict exposing (fromList)
 import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (class, draggable, id, style, value)
@@ -28,95 +37,135 @@ main =
 
 view : Model -> Html Msg
 view model =
-    let
-        actorRequirements =
-            RequirementModel.getActorRequirements model.requirementModel
-    in
-    div []
-        [ viewActorRequirementPanel actorRequirements model.control
-        ]
-
-
-viewActorRequirementPanel : ActorRequirementArray -> ModelControl -> Html Msg
-viewActorRequirementPanel actorRequirements control =
-    div [ style "max-width" "600px" ]
-        (List.append
-            (Array.toIndexedList actorRequirements
-                |> List.map
-                    (\( actorIndex, ( actorName, requirements ) ) ->
-                        viewEachActorRequirement actorIndex actorName requirements control
-                    )
-            )
-            [ buttonAddActorRequirement <| Array.length actorRequirements ]
-        )
-
-
-buttonAddActorRequirement : Int -> Html Msg
-buttonAddActorRequirement newActorIndex =
-    button
-        [ class "bg-gray-400"
-        , class "p-1"
-        , onClick <| PushActor newActorIndex
-        ]
-        [ text "add actor" ]
-
-
-viewEachActorRequirement : Int -> String -> RequirementArray -> ModelControl -> Html Msg
-viewEachActorRequirement actorIndex actorName requirements control =
-    let
-        attributes =
-            case getActorDragged control of
-                Nothing ->
-                    [ style "opacity" "1.0" ]
-
-                Just selectIndex ->
-                    if actorIndex == selectIndex then
-                        [ style "opacity" "0.5" ]
-
-                    else
-                        [ style "opacity" "1.0"
-                        , onDragEnter <| DragEnterActor selectIndex actorIndex
-                        ]
-
-        maybeActorEditState =
-            getActorEditState control
-
-        maybeRequirementControl =
-            getRequirementControl control
-    in
     div
-        attributes
-        [ viewActor actorIndex maybeActorEditState actorName
-        , viewRequirementList actorIndex maybeRequirementControl requirements
+        [ class "flex"
+        , class "p-1"
+        ]
+        [ viewMainPanel model
+        , viewUnboundPanel model
         ]
 
 
-viewActor : Int -> Maybe ( ActorEditState, Int ) -> String -> Html Msg
-viewActor actorIndex maybeControl actorName =
+viewMainPanel : Model -> Html Msg
+viewMainPanel model =
+    div
+        [ style "max-width" "600px"
+        , class "p-1"
+        ]
+        [ viewDescriptionPanel model
+        , viewListingPanel model
+        ]
+
+
+viewUnboundPanel : Model -> Html Msg
+viewUnboundPanel model =
+    div
+        [ style "max-width" "600px"
+        , class "p-1"
+        , class "flex"
+        ]
+        [ viewActorList <| getUnboundActors model.systemContext
+        , viewExternalSystemList <| getUnboundExternalSystems model.systemContext
+        ]
+
+
+viewDescriptionPanel : Model -> Html Msg
+viewDescriptionPanel model =
+    div
+        [ class "p-1" ]
+        [ viewSystemName <| getSystemName model.systemContext
+        , viewPurpose <| getPurpose model.systemContext
+        , viewExplanation <| getExplanation model.systemContext
+        ]
+
+
+viewPurpose : String -> Html Msg
+viewPurpose purpose =
+    if String.isEmpty purpose then
+        div
+            [ style "min-height" "30px"
+            , style "opacity" "0.3"
+            ]
+            [ text "please fill in the purpose" ]
+
+    else
+        div
+            [ style "min-height" "30px"
+            ]
+            [ text purpose ]
+
+
+viewSystemName : String -> Html Msg
+viewSystemName systemName =
+    if String.isEmpty systemName then
+        div
+            [ style "min-height" "30px"
+            , style "opacity" "0.3"
+            ]
+            [ text "please fill in the system name" ]
+
+    else
+        div
+            [ style "min-height" "30px"
+            ]
+            [ text systemName ]
+
+
+viewExplanation : String -> Html Msg
+viewExplanation explanation =
+    if String.isEmpty explanation then
+        div
+            [ style "min-height" "30px"
+            , style "opacity" "0.3"
+            ]
+            [ text "please fill in the explanation" ]
+
+    else
+        div
+            [ style "min-height" "30px"
+            ]
+            [ text explanation ]
+
+
+viewListingPanel : Model -> Html Msg
+viewListingPanel model =
+    div [ class "flex" ]
+        [ viewActorList <| getActors model.systemContext
+        , viewExternalSystemList <| getExternalSystems model.systemContext
+        ]
+
+
+viewActorList : Array String -> Html Msg
+viewActorList actors =
     div
         [ class "m-4"
         , class "p-4"
-        , style "max-width" "200px"
+        , style "width" "300px"
+        ]
+        --(List.append
+        (Array.toIndexedList actors
+            |> List.map
+                (\( index, actor ) ->
+                    viewActor index actor
+                )
+        )
+
+
+
+--  [ buttonAddRequirement actorIndex (Array.length requirements) ]
+--)
+
+
+viewActor : Int -> String -> Html Msg
+viewActor actorIndex actorName =
+    div
+        [ class "m-4"
+        , class "p-4"
+        , style "width" "200px"
         , draggable "true"
-        , onDragStart <| DragStartActor actorIndex
-        , onDragEnd LeaveControl
         ]
         [ viewActorSvg
-        , case maybeControl of
-            Nothing ->
-                viewStaticActorName actorIndex actorName
-
-            Just ( actorEditState, selectIndex ) ->
-                if actorIndex == selectIndex then
-                    case actorEditState of
-                        ActorDropDown ->
-                            viewActorDropdown actorIndex actorName
-
-                        ActorInput ->
-                            viewActorNameInput actorIndex actorName
-
-                else
-                    viewStaticActorName actorIndex actorName
+        , viewStaticActorName actorIndex actorName
         ]
 
 
@@ -132,135 +181,53 @@ viewStaticActorName actorIndex actorName =
     div
         [ style "min-height" "16px"
         , class "p-1"
-        , onClick <| ShowActorDropDown actorIndex
-        , onDoubleClick <| OpenActorInput actorIndex
         ]
         [ text <| actorName ]
 
 
-viewActorNameInput : Int -> String -> Html Msg
-viewActorNameInput actorIndex actorName =
-    input
-        [ id <| actorInputTagId actorIndex
-        , style "max-width" "160px"
-        , class "border-2"
-        , class "p-1"
-        , value <| actorName
-        , onBlur LeaveControl
-        , onEnter LeaveControl
-        , onInput <| UpdateActorName actorIndex
-        ]
-        []
-
-
-actorInputTagId : Int -> String
-actorInputTagId actorIndex =
-    "input-actor-" ++ String.fromInt actorIndex
-
-
-viewActorDropdown : Int -> String -> Html Msg
-viewActorDropdown actorIndex actorName =
-    div []
-        [ viewStaticActorName actorIndex actorName
-        , div [ onClick <| OpenActorInput actorIndex ] [ text "rename" ]
-        , div [] [ text "delete" ]
-        ]
-
-
-viewRequirementList : Int -> Maybe ( RequirementControl, ( Int, Int ) ) -> RequirementArray -> Html Msg
-viewRequirementList actorIndex maybeControl requirements =
+viewExternalSystemList : Array String -> Html Msg
+viewExternalSystemList systems =
     div
         [ class "m-4"
         , class "p-4"
-        , style "max-width" "400px"
+        , style "width" "300px"
         ]
-        (List.append
-            (Array.toIndexedList requirements
-                |> List.map
-                    (\( requirementIndex, requirementContent ) ->
-                        viewRequirement ( actorIndex, requirementIndex ) maybeControl requirementContent
-                    )
-            )
-            [ buttonAddRequirement actorIndex (Array.length requirements) ]
+        --(List.append
+        (Array.toIndexedList systems
+            |> List.map
+                (\( index, system ) ->
+                    viewExternalSystem index system
+                )
         )
 
 
-buttonAddRequirement : Int -> Int -> Html Msg
-buttonAddRequirement actorIndex newRequirementIndex =
-    button
-        [ class "bg-gray-400"
-        , class "p-1"
-        , onClick <| PushRequirement actorIndex newRequirementIndex
-        ]
-        [ text "add requirement" ]
-
-
-viewRequirement : ( Int, Int ) -> Maybe ( RequirementControl, ( Int, Int ) ) -> String -> Html Msg
-viewRequirement ( actorIndex, requirementIndex ) maybeControl requirementContent =
-    case maybeControl of
-        Nothing ->
-            viewStaticRequirementContent actorIndex requirementIndex "1.0" requirementContent
-
-        Just ( requirementControl, ( selectActorIndex, selectRequirementIndex ) ) ->
-            if actorIndex == selectActorIndex && requirementIndex == selectRequirementIndex then
-                case requirementControl of
-                    RequirementDropDown ->
-                        viewRequirementDropdown actorIndex requirementIndex requirementContent
-
-                    RequirementInput ->
-                        viewRequirementContentInput actorIndex requirementIndex requirementContent
-
-                    RequirementDragged ->
-                        viewStaticRequirementContent actorIndex requirementIndex "0.5" requirementContent
-
-            else
-                viewStaticRequirementContent actorIndex requirementIndex "1.0" requirementContent
-
-
-viewStaticRequirementContent : Int -> Int -> String -> String -> Html Msg
-viewStaticRequirementContent actorIndex requirementIndex opacity requirementContent =
+viewExternalSystem : Int -> String -> Html Msg
+viewExternalSystem actorIndex actorName =
     div
-        [ style "min-height" "24px"
-        , style "opacity" opacity
-        , class "m-2"
-        , class "p-1"
+        [ class "m-4"
+        , class "p-4"
+        , style "width" "200px"
         , draggable "true"
-        , onClick <| ShowRequirementDropDown actorIndex requirementIndex
-        , onDoubleClick <| OpenRequirementInput actorIndex requirementIndex
-
-        --, onDragEnter <| DragEnterRequirement actorIndex selectIndex requirementIndex
         ]
-        [ text <| requirementContent ]
+        [ viewExternalSystemSvg
+        , viewStaticExternalSystemName actorIndex actorName
+        ]
 
 
-viewRequirementContentInput : Int -> Int -> String -> Html Msg
-viewRequirementContentInput actorIndex requirementIndex requirementContent =
-    input
-        [ id <| requirementInputTagId actorIndex requirementIndex
-        , style "max-width" "160px"
-        , style "min-height" "24px"
-        , class "border-2"
+viewExternalSystemSvg : Html Msg
+viewExternalSystemSvg =
+    svg [ width "50", height "50", viewBox "0 0 50 50" ]
+        [ rect [ x "0", y "0", width "50", height "50" ] []
+        ]
+
+
+viewStaticExternalSystemName : Int -> String -> Html Msg
+viewStaticExternalSystemName actorIndex actorName =
+    div
+        [ style "min-height" "16px"
         , class "p-1"
-        , value <| requirementContent
-        , onBlur LeaveControl
-        , onEnter LeaveControl
-        , onInput <| UpdateRequirementContent actorIndex requirementIndex
         ]
-        []
-
-
-requirementInputTagId : Int -> Int -> String
-requirementInputTagId actorIndex requirementIndex =
-    "input-requirement-" ++ String.fromInt actorIndex ++ "-" ++ String.fromInt requirementIndex
-
-
-viewRequirementDropdown : Int -> Int -> String -> Html Msg
-viewRequirementDropdown actorIndex requirementIndex requirementContent =
-    div []
-        [ viewStaticRequirementContent actorIndex requirementIndex "1.0" requirementContent
-        , div [ onClick <| OpenRequirementInput actorIndex requirementIndex ] [ text "edit" ]
-        , div [ onClick <| RemoveRequirement actorIndex requirementIndex ] [ text "remove" ]
-        ]
+        [ text <| actorName ]
 
 
 onEnter : Msg -> Attribute Msg
@@ -292,24 +259,17 @@ onDragEnter msg =
     on "dragenter" <| Decode.succeed msg
 
 
-
--- viewPlaceHolderActorPanel : ActorList -> Html Msg
--- viewPlaceHolderRequirementPanel : RequirementList -> Html Msg
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { requirementModel =
-            RequirementModel.initialize
-                (Dict.fromList
-                    [ ( "actor1", [ "req1-1", "req1-2" ] )
-                    , ( "actor2", [ "req2-1", "req2-2" ] )
-                    , ( "actor3", [ "req3-1", "req3-2", "req3-3" ] )
-                    , ( "actor4", [] )
-                    ]
-                )
-                [ "aaa" ]
-                [ "bbb" ]
+    ( { systemContext =
+            SystemContextModel.initialize
+                ""
+                ""
+                ""
+                [ "actor-1", "actor-2", "actor-3", "actor-4" ]
+                [ "system-1", "system-2", "system-3", "system-4", "system-5" ]
+                [ "actor-5", "actor-6", "actor-7", "actor-8" ]
+                [ "system-6", "system-7" ]
       , control = NoControl
       }
     , Cmd.none
@@ -318,102 +278,7 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        -- handle Actor messages
-        PushActor newActorIndex ->
-            ( { model
-                | requirementModel = RequirementModel.pushActor (Actor.create "") model.requirementModel
-                , control = ActorEditState ActorInput newActorIndex
-              }
-            , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId newActorIndex)
-            )
-
-        UpdateActorName actorIndex newName ->
-            ( { model | requirementModel = RequirementModel.renameActor actorIndex newName model.requirementModel }
-            , Cmd.none
-            )
-
-        ShowActorDropDown actorIndex ->
-            ( { model | control = ActorEditState ActorDropDown actorIndex }
-            , Cmd.none
-            )
-
-        OpenActorInput actorIndex ->
-            ( { model | control = ActorEditState ActorInput actorIndex }
-            , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId actorIndex)
-            )
-
-        FocusActorInput _ ->
-            ( model, Cmd.none )
-
-        DragStartActor actorIndex ->
-            ( { model | control = ActorDragged actorIndex }
-            , Cmd.none
-            )
-
-        DragEnterActor fromActorIndex toActorIndex ->
-            ( { model
-                | requirementModel = RequirementModel.sortActor fromActorIndex toActorIndex model.requirementModel
-                , control = ActorDragged toActorIndex
-              }
-            , Cmd.none
-            )
-
-        -- handle Requirement messages
-        PushRequirement actorIndex newRequirementIndex ->
-            ( { model
-                | requirementModel = RequirementModel.pushRequirement actorIndex (Requirement.create "") model.requirementModel
-                , control = RequirementControl RequirementInput ( actorIndex, newRequirementIndex )
-              }
-            , Task.attempt FocusRequirementInput (Dom.focus <| requirementInputTagId actorIndex newRequirementIndex)
-            )
-
-        UpdateRequirementContent actorIndex requirementIndex newContent ->
-            ( { model
-                | requirementModel = RequirementModel.updateRequirementContent ( actorIndex, requirementIndex ) newContent model.requirementModel
-              }
-            , Cmd.none
-            )
-
-        ShowRequirementDropDown actorIndex requirementIndex ->
-            ( { model | control = RequirementControl RequirementDropDown ( actorIndex, requirementIndex ) }
-            , Cmd.none
-            )
-
-        OpenRequirementInput actorIndex requirementIndex ->
-            ( { model | control = RequirementControl RequirementInput ( actorIndex, requirementIndex ) }
-            , Task.attempt FocusRequirementInput (Dom.focus <| requirementInputTagId actorIndex requirementIndex)
-            )
-
-        FocusRequirementInput _ ->
-            ( model, Cmd.none )
-
-        RemoveRequirement actorIndex requirementIndex ->
-            ( { model
-                | requirementModel = RequirementModel.removeRequirement ( actorIndex, requirementIndex ) model.requirementModel
-                , control = NoControl
-              }
-            , Cmd.none
-            )
-
-        DragStartRequirement actorIndex requirementIndex ->
-            ( { model | control = RequirementControl RequirementDragged ( actorIndex, requirementIndex ) }
-            , Cmd.none
-            )
-
-        DragEnterRequirement actorIndex fromRequirementIndex toRequirementIndex ->
-            ( { model
-                | requirementModel = RequirementModel.sortRequirement actorIndex fromRequirementIndex toRequirementIndex model.requirementModel
-                , control = RequirementControl RequirementDragged ( actorIndex, toRequirementIndex )
-              }
-            , Cmd.none
-            )
-
-        --common messages
-        LeaveControl ->
-            ( { model | control = NoControl }
-            , Cmd.none
-            )
+    ( model, Cmd.none )
 
 
 type Msg
@@ -455,7 +320,7 @@ type alias RequirementIndex =
 
 
 type alias Model =
-    { requirementModel : RequirementModel
+    { systemContext : SystemContextModel
     , control : ModelControl
     }
 
