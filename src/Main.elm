@@ -3,9 +3,12 @@ module Main exposing (main)
 import Array exposing (Array)
 import Browser exposing (element)
 import Browser.Dom as Dom
+import Data.Actor as Actor exposing (create)
 import Data.SystemContextModel as SystemContextModel
     exposing
         ( SystemContextModel
+        , dropInActor
+        , dropOffActor
         , getActors
         , getExplanation
         , getExternalSystems
@@ -14,8 +17,15 @@ import Data.SystemContextModel as SystemContextModel
         , getUnboundActors
         , getUnboundExternalSystems
         , initialize
+        , pushActor
+        , pushUnboundActor
+        , removeActor
+        , removeUnboundActor
+        , renameActor
+        , renameUnboundActor
+        , sortActor
+        , sortUnboundActor
         )
-import Dict exposing (fromList)
 import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (class, draggable, id, style, value)
 import Html.Events exposing (keyCode, on, onBlur, onClick, onDoubleClick, onInput, preventDefaultOn, stopPropagationOn)
@@ -54,18 +64,6 @@ viewMainPanel model =
         ]
         [ viewDescriptionPanel model
         , viewListingPanel model
-        ]
-
-
-viewUnboundPanel : Model -> Html Msg
-viewUnboundPanel model =
-    div
-        [ style "max-width" "600px"
-        , class "p-1"
-        , class "flex"
-        ]
-        [ viewActorList <| getUnboundActors model.systemContext
-        , viewExternalSystemList <| getUnboundExternalSystems model.systemContext
         ]
 
 
@@ -130,48 +128,124 @@ viewExplanation explanation =
 viewListingPanel : Model -> Html Msg
 viewListingPanel model =
     div [ class "flex" ]
-        [ viewActorList <| getActors model.systemContext
+        [ viewActorList model.control (getActors model.systemContext)
         , viewExternalSystemList <| getExternalSystems model.systemContext
         ]
 
 
-viewActorList : Array String -> Html Msg
-viewActorList actors =
+
+---------------------------------
+-- actor views
+---------------------------------
+
+
+viewActorList : ModelControl -> Array String -> Html Msg
+viewActorList control actors =
     div
         [ class "m-4"
         , class "p-4"
         , style "width" "300px"
         ]
-        --(List.append
-        (Array.toIndexedList actors
-            |> List.map
-                (\( index, actor ) ->
-                    viewActor index actor
-                )
+        (List.append
+            (Array.toIndexedList actors
+                |> List.map
+                    (\( index, actor ) ->
+                        viewActor control index actor
+                    )
+            )
+            [ buttonAddActor (Array.length actors) ]
         )
 
 
+buttonAddActor : Int -> Html Msg
+buttonAddActor newActorIndex =
+    button
+        [ class "bg-gray-400"
+        , class "p-1"
+        , onClick <| PushActor newActorIndex
+        ]
+        [ text "add actor" ]
 
---  [ buttonAddRequirement actorIndex (Array.length requirements) ]
---)
 
+viewActor : ModelControl -> Int -> String -> Html Msg
+viewActor control actorIndex actorName =
+    let
+        maybeDragged =
+            getActorDragged control
 
-viewActor : Int -> String -> Html Msg
-viewActor actorIndex actorName =
+        maybeEdit =
+            getActorEdit control
+
+        defaultAttributes =
+            [ class "m-4"
+            , class "p-4"
+            , style "width" "200px"
+            , draggable "true"
+            , onDragStart <| DragStartActor actorIndex
+            , onDragEnd LeaveControl
+            ]
+
+        attributes =
+            case maybeDragged of
+                Just (ActorDragged selectIndex) ->
+                    if selectIndex /= actorIndex then
+                        (onDragEnter <| SortActor selectIndex actorIndex) :: defaultAttributes
+
+                    else
+                        defaultAttributes
+
+                Just (UnboundActorDragged selectIndex) ->
+                    (onDragEnter <| DropInActor selectIndex actorIndex) :: defaultAttributes
+
+                Nothing ->
+                    defaultAttributes
+    in
     div
-        [ class "m-4"
-        , class "p-4"
-        , style "width" "200px"
-        , draggable "true"
-        ]
-        [ viewActorSvg
-        , viewStaticActorName actorIndex actorName
+        attributes
+        [ viewActorSvg maybeDragged actorIndex
+        , case maybeEdit of
+            Nothing ->
+                viewStaticActorName actorIndex actorName
+
+            Just (ActorInput selectIndex) ->
+                if actorIndex == selectIndex then
+                    viewActorNameInput actorIndex actorName
+
+                else
+                    viewStaticActorName actorIndex actorName
+
+            Just (ActorDropDown selectIndex) ->
+                if actorIndex == selectIndex then
+                    viewActorDropdown actorIndex actorName
+
+                else
+                    viewStaticActorName actorIndex actorName
         ]
 
 
-viewActorSvg : Html Msg
-viewActorSvg =
-    svg [ width "50", height "50", viewBox "0 0 50 50" ]
+viewActorSvg : Maybe ActorDragged -> Int -> Html Msg
+viewActorSvg maybeDragged actorIndex =
+    let
+        defaultAttributes =
+            [ width "50", height "50", viewBox "0 0 50 50" ]
+
+        attributes =
+            case maybeDragged of
+                Just (ActorDragged selectIndex) ->
+                    if actorIndex == selectIndex then
+                        style "opacity" "0.5" :: defaultAttributes
+
+                    else
+                        defaultAttributes
+
+                Just (UnboundActorDragged _) ->
+                    defaultAttributes
+
+                Nothing ->
+                    defaultAttributes
+    in
+    svg
+        attributes
         [ circle [ cx "25", cy "25", r "25" ] []
         ]
 
@@ -181,8 +255,216 @@ viewStaticActorName actorIndex actorName =
     div
         [ style "min-height" "16px"
         , class "p-1"
+        , onClick <| ShowActorDropDown actorIndex
+        , onDoubleClick <| OpenActorInput actorIndex
         ]
         [ text <| actorName ]
+
+
+viewActorDragged : Int -> String -> Html Msg
+viewActorDragged actorIndex actorName =
+    div
+        [ style "opacity" "0.5" ]
+        [ viewStaticActorName actorIndex actorName ]
+
+
+viewActorNameInput : Int -> String -> Html Msg
+viewActorNameInput actorIndex actorName =
+    input
+        [ id <| actorInputTagId actorIndex
+        , style "max-width" "160px"
+        , class "border-2"
+        , class "p-1"
+        , value <| actorName
+        , onBlur LeaveControl
+        , onEnter LeaveControl
+        , onInput <| UpdateActorName actorIndex
+        ]
+        []
+
+
+actorInputTagId : Int -> String
+actorInputTagId actorIndex =
+    "input-actor-" ++ String.fromInt actorIndex
+
+
+viewActorDropdown : Int -> String -> Html Msg
+viewActorDropdown actorIndex actorName =
+    div []
+        [ viewStaticActorName actorIndex actorName
+        , div [ onClick <| OpenActorInput actorIndex ] [ text "rename" ]
+        , div [ onClick <| RemoveActor actorIndex ] [ text "delete" ]
+        ]
+
+
+
+---------------------------------
+--- unbound actor views
+---------------------------------
+
+
+viewUnboundActorList : ModelControl -> Array String -> Html Msg
+viewUnboundActorList control actors =
+    div
+        [ class "m-4"
+        , class "p-4"
+        , style "width" "300px"
+        ]
+        (List.append
+            (Array.toIndexedList actors
+                |> List.map
+                    (\( index, actor ) ->
+                        viewUnboundActor control index actor
+                    )
+            )
+            [ buttonAddUnboundActor (Array.length actors) ]
+        )
+
+
+buttonAddUnboundActor : Int -> Html Msg
+buttonAddUnboundActor newActorIndex =
+    button
+        [ class "bg-gray-400"
+        , class "p-1"
+        , onClick <| PushUnboundActor newActorIndex
+        ]
+        [ text "add actor" ]
+
+
+viewUnboundActor : ModelControl -> Int -> String -> Html Msg
+viewUnboundActor control actorIndex actorName =
+    let
+        maybeDragged =
+            getActorDragged control
+
+        maybeEdit =
+            getUnboundActorEdit control
+
+        defaultAttributes =
+            [ class "m-4"
+            , class "p-4"
+            , style "width" "200px"
+            , draggable "true"
+            , onDragStart <| DragStartUnboundActor actorIndex
+            , onDragEnd LeaveControl
+            ]
+
+        attributes =
+            case maybeDragged of
+                Just (UnboundActorDragged selectIndex) ->
+                    if selectIndex /= actorIndex then
+                        (onDragEnter <| SortUnboundActor selectIndex actorIndex) :: defaultAttributes
+
+                    else
+                        defaultAttributes
+
+                Just (ActorDragged selectIndex) ->
+                    (onDragEnter <| DropOffActor selectIndex actorIndex) :: defaultAttributes
+
+                Nothing ->
+                    defaultAttributes
+    in
+    div
+        attributes
+        [ viewUnboundActorSvg maybeDragged actorIndex
+        , case maybeEdit of
+            Nothing ->
+                viewStaticUnboundActorName actorIndex actorName
+
+            Just (UnboundActorDropDown selectIndex) ->
+                if actorIndex == selectIndex then
+                    viewUnboundActorDropdown actorIndex actorName
+
+                else
+                    viewStaticUnboundActorName actorIndex actorName
+
+            Just (UnboundActorInput selectIndex) ->
+                if actorIndex == selectIndex then
+                    viewUnboundActorNameInput actorIndex actorName
+
+                else
+                    viewStaticUnboundActorName actorIndex actorName
+        ]
+
+
+viewUnboundActorSvg : Maybe ActorDragged -> Int -> Html Msg
+viewUnboundActorSvg maybeDragged actorIndex =
+    let
+        defaultAttributes =
+            [ width "50", height "50", viewBox "0 0 50 50" ]
+
+        attributes =
+            case maybeDragged of
+                Just (UnboundActorDragged selectIndex) ->
+                    if actorIndex == selectIndex then
+                        style "opacity" "0.5" :: defaultAttributes
+
+                    else
+                        defaultAttributes
+
+                Just (ActorDragged _) ->
+                    defaultAttributes
+
+                Nothing ->
+                    defaultAttributes
+    in
+    svg
+        attributes
+        [ circle [ cx "25", cy "25", r "25" ] []
+        ]
+
+
+viewStaticUnboundActorName : Int -> String -> Html Msg
+viewStaticUnboundActorName actorIndex actorName =
+    div
+        [ style "min-height" "16px"
+        , class "p-1"
+        , onClick <| ShowUnboundActorDropDown actorIndex
+        , onDoubleClick <| OpenUnboundActorInput actorIndex
+        ]
+        [ text <| actorName ]
+
+
+viewUnboundActorDragged : Int -> String -> Html Msg
+viewUnboundActorDragged actorIndex actorName =
+    div
+        [ style "opacity" "0.5" ]
+        [ viewStaticActorName actorIndex actorName ]
+
+
+viewUnboundActorNameInput : Int -> String -> Html Msg
+viewUnboundActorNameInput actorIndex actorName =
+    input
+        [ id <| unboundActorInputTagId actorIndex
+        , style "max-width" "160px"
+        , class "border-2"
+        , class "p-1"
+        , value <| actorName
+        , onBlur LeaveControl
+        , onEnter LeaveControl
+        , onInput <| UpdateUnboundActorName actorIndex
+        ]
+        []
+
+
+unboundActorInputTagId : Int -> String
+unboundActorInputTagId actorIndex =
+    "input-unbound-actor-" ++ String.fromInt actorIndex
+
+
+viewUnboundActorDropdown : Int -> String -> Html Msg
+viewUnboundActorDropdown actorIndex actorName =
+    div []
+        [ viewStaticUnboundActorName actorIndex actorName
+        , div [ onClick <| OpenUnboundActorInput actorIndex ] [ text "rename" ]
+        , div [ onClick <| RemoveUnboundActor actorIndex ] [ text "delete" ]
+        ]
+
+
+
+---------------------------------
+-- external system views
+---------------------------------
 
 
 viewExternalSystemList : Array String -> Html Msg
@@ -228,6 +510,18 @@ viewStaticExternalSystemName actorIndex actorName =
         , class "p-1"
         ]
         [ text <| actorName ]
+
+
+viewUnboundPanel : Model -> Html Msg
+viewUnboundPanel model =
+    div
+        [ style "max-width" "600px"
+        , class "p-1"
+        , class "flex"
+        ]
+        [ viewUnboundActorList model.control (getUnboundActors model.systemContext)
+        , viewExternalSystemList <| getUnboundExternalSystems model.systemContext
+        ]
 
 
 onEnter : Msg -> Attribute Msg
@@ -278,45 +572,149 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        -- handle Actor messages
+        PushActor newActorIndex ->
+            ( { model
+                | systemContext = pushActor (Actor.create "") model.systemContext
+                , control = ControlActorEdit <| ActorInput newActorIndex
+              }
+            , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId newActorIndex)
+            )
+
+        UpdateActorName actorIndex newName ->
+            ( { model | systemContext = renameActor actorIndex newName model.systemContext }
+            , Cmd.none
+            )
+
+        ShowActorDropDown actorIndex ->
+            ( { model | control = ControlActorEdit <| ActorDropDown actorIndex }
+            , Cmd.none
+            )
+
+        OpenActorInput actorIndex ->
+            ( { model | control = ControlActorEdit (ActorInput actorIndex) }
+            , Task.attempt FocusActorInput (Dom.focus <| actorInputTagId actorIndex)
+            )
+
+        RemoveActor actorIndex ->
+            ( { model
+                | systemContext = removeActor actorIndex model.systemContext
+                , control = NoControl
+              }
+            , Cmd.none
+            )
+
+        DragStartActor actorIndex ->
+            ( { model | control = ControlActorDragged <| ActorDragged actorIndex }
+            , Cmd.none
+            )
+
+        SortActor fromIndex toIndex ->
+            ( { model
+                | systemContext = sortActor fromIndex toIndex model.systemContext
+                , control = ControlActorDragged <| ActorDragged toIndex
+              }
+            , Cmd.none
+            )
+
+        DropInActor unboundIndex actorIndex ->
+            ( { model
+                | systemContext = dropInActor unboundIndex actorIndex model.systemContext
+                , control = ControlActorDragged <| ActorDragged actorIndex
+              }
+            , Cmd.none
+            )
+
+        FocusActorInput _ ->
+            ( model, Cmd.none )
+
+        -- handle unbound actor messages
+        PushUnboundActor newActorIndex ->
+            ( { model
+                | systemContext = pushUnboundActor (Actor.create "") model.systemContext
+                , control = ControlUnboundActorEdit <| UnboundActorInput newActorIndex
+              }
+            , Task.attempt FocusUnboundActorInput (Dom.focus <| unboundActorInputTagId newActorIndex)
+            )
+
+        UpdateUnboundActorName actorIndex newName ->
+            ( { model | systemContext = renameUnboundActor actorIndex newName model.systemContext }
+            , Cmd.none
+            )
+
+        ShowUnboundActorDropDown actorIndex ->
+            ( { model | control = ControlUnboundActorEdit <| UnboundActorDropDown actorIndex }
+            , Cmd.none
+            )
+
+        OpenUnboundActorInput actorIndex ->
+            ( { model | control = ControlUnboundActorEdit <| UnboundActorInput actorIndex }
+            , Task.attempt FocusUnboundActorInput (Dom.focus <| unboundActorInputTagId actorIndex)
+            )
+
+        RemoveUnboundActor actorIndex ->
+            ( { model
+                | systemContext = removeUnboundActor actorIndex model.systemContext
+                , control = NoControl
+              }
+            , Cmd.none
+            )
+
+        DragStartUnboundActor actorIndex ->
+            ( { model | control = ControlActorDragged <| UnboundActorDragged actorIndex }
+            , Cmd.none
+            )
+
+        SortUnboundActor fromIndex toIndex ->
+            ( { model
+                | systemContext = sortUnboundActor fromIndex toIndex model.systemContext
+                , control = ControlActorDragged <| UnboundActorDragged toIndex
+              }
+            , Cmd.none
+            )
+
+        DropOffActor actorIndex unboundIndex ->
+            ( { model
+                | systemContext = dropOffActor actorIndex unboundIndex model.systemContext
+                , control = ControlActorDragged <| UnboundActorDragged unboundIndex
+              }
+            , Cmd.none
+            )
+
+        FocusUnboundActorInput _ ->
+            ( model, Cmd.none )
+
+        --common messages
+        LeaveControl ->
+            ( { model | control = NoControl }
+            , Cmd.none
+            )
 
 
 type Msg
     = -- Actor messages
-      PushActor ActorIndex
-    | UpdateActorName ActorIndex String
-    | ShowActorDropDown ActorIndex
-    | OpenActorInput ActorIndex
+      PushActor Int
+    | UpdateActorName Int String
+    | ShowActorDropDown Int
+    | OpenActorInput Int
     | FocusActorInput (Result Dom.Error ())
-    | DragStartActor FromIndex
-    | DragEnterActor FromIndex ToIndex
-      -- Requirement messages
-    | PushRequirement ActorIndex RequirementIndex
-    | UpdateRequirementContent ActorIndex RequirementIndex String
-    | ShowRequirementDropDown ActorIndex RequirementIndex
-    | OpenRequirementInput ActorIndex RequirementIndex
-    | FocusRequirementInput (Result Dom.Error ())
-    | RemoveRequirement ActorIndex RequirementIndex
-    | DragStartRequirement ActorIndex FromIndex
-    | DragEnterRequirement ActorIndex FromIndex ToIndex
+    | DragStartActor Int
+    | SortActor Int Int
+    | DropInActor Int Int
+    | RemoveActor Int
+      -- Unbound Actor messages
+    | PushUnboundActor Int
+    | UpdateUnboundActorName Int String
+    | ShowUnboundActorDropDown Int
+    | OpenUnboundActorInput Int
+    | FocusUnboundActorInput (Result Dom.Error ())
+    | DragStartUnboundActor Int
+    | SortUnboundActor Int Int
+    | DropOffActor Int Int
+    | RemoveUnboundActor Int
       -- Requirement messages
     | LeaveControl
-
-
-type alias FromIndex =
-    Int
-
-
-type alias ToIndex =
-    Int
-
-
-type alias ActorIndex =
-    Int
-
-
-type alias RequirementIndex =
-    Int
 
 
 type alias Model =
@@ -344,70 +742,64 @@ type alias RequirementArray =
 {-| ModelControl: only one of them is possible at a time
 -}
 type ModelControl
-    = ActorEditState ActorEditState Int
-    | ActorDragged Int
-    | RequirementControl RequirementControl ( Int, Int )
+    = ControlActorEdit ActorEdit
+    | ControlActorDragged ActorDragged
+    | ExternalSystemEdit ExternalSystemEdit
+    | ControlUnboundActorEdit UnboundActorEdit
+    | ControlUnboundExternalSystemEdit UnboundExternalSystemEdit
     | NoControl
 
 
-type RequirementControl
-    = RequirementDropDown
-    | RequirementInput
-    | RequirementDragged
+type UnboundExternalSystemEdit
+    = UnboundExternalSystemDropDown ( Int, Int )
+    | UnboundExternalSystemInput ( Int, Int )
 
 
-type ActorEditState
-    = ActorDropDown
-    | ActorInput
+type ActorEdit
+    = ActorInput Int
+    | ActorDropDown Int
 
 
-{-| getActorDragged, getActorEditState, getRequirementControl, getRequirementDragged:
-Utility functions to convert ModelControl to fin-grained Maybe.
-Only one of these functions may return Just at a time.
--}
-getActorDragged : ModelControl -> Maybe Int
-getActorDragged control =
-    case control of
-        RequirementControl _ _ ->
-            Nothing
-
-        ActorEditState _ _ ->
-            Nothing
-
-        ActorDragged index ->
-            Just index
-
-        NoControl ->
-            Nothing
+type ActorDragged
+    = ActorDragged Int
+    | UnboundActorDragged Int
 
 
-getActorEditState : ModelControl -> Maybe ( ActorEditState, Int )
-getActorEditState control =
-    case control of
-        RequirementControl _ _ ->
-            Nothing
+type ExternalSystemEdit
+    = ExternalSystemDropDown ( Int, Int )
+    | ExternalSystemInput ( Int, Int )
 
-        ActorEditState actorEditState selectIndex ->
-            Just ( actorEditState, selectIndex )
 
-        ActorDragged _ ->
-            Nothing
+type UnboundActorEdit
+    = UnboundActorDropDown Int
+    | UnboundActorInput Int
 
-        NoControl ->
+
+getActorEdit : ModelControl -> Maybe ActorEdit
+getActorEdit modelControl =
+    case modelControl of
+        ControlActorEdit edit ->
+            Just edit
+
+        _ ->
             Nothing
 
 
-getRequirementControl : ModelControl -> Maybe ( RequirementControl, ( Int, Int ) )
-getRequirementControl control =
-    case control of
-        RequirementControl requirementControl selectIndexTuple ->
-            Just ( requirementControl, selectIndexTuple )
+getActorDragged : ModelControl -> Maybe ActorDragged
+getActorDragged modelControl =
+    case modelControl of
+        ControlActorDragged dragged ->
+            Just dragged
 
-        ActorEditState _ _ ->
+        _ ->
             Nothing
 
-        ActorDragged _ ->
-            Nothing
 
-        NoControl ->
+getUnboundActorEdit : ModelControl -> Maybe UnboundActorEdit
+getUnboundActorEdit modelControl =
+    case modelControl of
+        ControlUnboundActorEdit edit ->
+            Just edit
+
+        _ ->
             Nothing

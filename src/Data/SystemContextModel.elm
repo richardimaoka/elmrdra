@@ -276,7 +276,7 @@ removeUnboundActor index model =
     internalWrapper
         (\record ->
             { record
-                | actors = ActorList.remove index record.actors
+                | unboundActors = ActorList.remove index record.unboundActors
             }
         )
         model
@@ -287,7 +287,7 @@ pushUnboundActor actor model =
     internalWrapper
         (\record ->
             { record
-                | actors = ActorList.push actor record.actors
+                | unboundActors = ActorList.push actor record.unboundActors
             }
         )
         model
@@ -298,7 +298,7 @@ sortUnboundActor fromIndex toIndex model =
     internalWrapper
         (\record ->
             { record
-                | actors = ActorList.sort fromIndex toIndex record.actors
+                | unboundActors = ActorList.sort fromIndex toIndex record.unboundActors
             }
         )
         model
@@ -309,7 +309,7 @@ renameUnboundActor index name model =
     internalWrapper
         (\record ->
             { record
-                | actors = ActorList.rename index name record.actors
+                | unboundActors = ActorList.rename index name record.unboundActors
             }
         )
         model
